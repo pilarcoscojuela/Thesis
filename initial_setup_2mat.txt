@@ -1,0 +1,115 @@
+// Initialize constants and fields
+n := 14;
+q := 2^n;
+Fq<T> := FiniteField(q); // T is the generator of Fq
+p := PrimitivePolynomial(Fq, 2);
+Sq<x> := PolynomialRing(Fq);
+Sq!p;
+
+Fq2<u> := ext<Fq | p>; // Fq2 is an extension of Fq
+AssertAttribute(Fq2, "PowerPrinting", false);
+
+
+prefixes := ["R","S", "K", "L","Z","W","X","Y"]; 
+prefixes_t := ["Rt","St", "Kt", "Lt","Zt","Wt","Xt","Yt"];
+ctes:=35;
+ctes_t:=4;
+
+num_par:=#prefixes*ctes;
+num_par_t:=#prefixes_t*ctes_t;
+//num_h:=42;
+num_h:=16;
+num_lin:=4;
+num_x:=8;
+num_t:=8;
+
+
+
+num_vars := num_par+num_par_t+num_h+num_lin+num_x+num_t; 
+num_vars_Sr:=num_par_t+num_h+num_lin;
+
+S<[x]> := PolynomialRing(Fq2, num_vars);
+
+// Assign names to variables of the polynomial ring S
+names := [];
+for x in prefixes do
+    names cat:= &cat[[x cat IntegerToString(i)]: i in [1..ctes]];
+end for;
+for x in prefixes_t do
+    names cat:= &cat[[x cat IntegerToString(i)]: i in [1..ctes_t]];
+end for;
+for i in [1..num_h] do
+names cat:=["H" cat IntegerToString(i)];
+end for;
+for i in [1..num_lin] do
+names cat:=["a" cat IntegerToString(i)];
+end for;
+for i in [1..num_x] do
+names cat:=["x" cat IntegerToString(i)];
+end for;
+for j in [1..num_t] do
+names cat:=["t" cat IntegerToString(j)];
+end for;
+
+
+AssignNames(~S, names);
+
+P<[y]>:= PolynomialRing(BaseRing(S), Rank(S));
+
+Sr<[z]>:=PolynomialRing(BaseRing(S),num_par_t+num_h+num_lin,"lex");
+// Define a ring homomorphism phi: R -> P that sends R.i to P.i.
+phi := hom<S -> P | [ S.i : i in [1..Rank(S)] ]>;
+psi := hom<P -> S | [ P.i : i in [1..Rank(S)] ]>;
+
+restr:=hom<S -> Sr | [Sr!0: i in [1..num_par]] cat [ Sr.i : i in [1..(num_par_t+num_h+num_lin)] ] cat [Sr!0: i in [num_par+num_par_t+num_h+num_lin+1..num_vars]] >;
+inv_restr:=hom<Sr -> S |  [ S.i : i in [(num_par+1)..(num_par+num_par_t+num_h+num_lin)] ] >;
+
+/*T1:=Vector(R,[ T^3640, T^15720, 0, 0, 0, 0, T^9461, T^3962 ]);*/
+
+/*
+//Random matrices with entries 2^a with 2^a<q^2 and such that Gcd(Determinant(matrix),q^2-1)=1 to ensure invertibility over the ring Z_(q^2-1)
+E1:=Matrix(4,4,[ 4096, 4096, 0, 0, 16777216, 0, 16777216, 0, 0, 32768, 0, 8192, 
+0, 0, 512, 262144 ]);
+ E2:=Matrix(4,4,[ 2097152, 512, 0, 0, 2, 0, 67108864, 0, 0, 2097152, 0, 256, 0, 
+0, 33554432, 1048576 ]);
+ E3:=Matrix(4,4,[ 128, 134217728, 0, 0, 134217728, 0, 32768, 0, 0, 4, 0, 8, 0, 
+0, 4, 262144 ]);
+*/
+
+E1:=Matrix(4,4,[ 1, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 67108864, 0, 0, 1, 512 ]); 
+E2:=Matrix(4,4,[ 1, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 131072 ]); 
+E3:=Matrix(4,4,[ 4096, 4096, 0, 0, 16, 0, 16, 0, 0, 32768, 0, 32768, 0, 0, 
+524288, 4 ]); 
+
+//Random linear matrices invertible over Fq and by blocks 2x2 
+linear_0:=Matrix(Fq,8,8,[ T^13982, T^14568, 0, 0, 0, 0, 0, 0, T^13333, T^6209, 0, 0, 0,
+0, 0, 0, 0, 0, T^3724, T^209, 0, 0, 0, 0, 0, 0, T^13569, T^4955, 0, 0, 0, 0, 0, 
+0, 0, 0, T^13490, T^8048, 0, 0, 0, 0, 0, 0, T^2913, T^9725, 0, 0, 0, 0, 0, 0, 0,
+0, T^14304, T^11700, 0, 0, 0, 0, 0, 0, T^13447, T^9550 ]);
+linear_1:=Matrix(Fq,8,8,[ T^7667, T^8490, 0, 0, 0, 0, 0, 0, T^2710, T^6094, 0, 0, 0, 0,
+0, 0, 0, 0, T^4806, T^4025, 0, 0, 0, 0, 0, 0, T^7006, T^14653, 0, 0, 0, 0, 0, 0,
+0, 0, T^16102, T^11554, 0, 0, 0, 0, 0, 0, T^11313, T^22, 0, 0, 0, 0, 0, 0, 0, 0,
+T^11566, T^11619, 0, 0, 0, 0, 0, 0, T^2039, T^15016 ]);
+linear_2:=Matrix(Fq,8,8,[ T^4747, T^4077, 0, 0, 0, 0, 0, 0, T^5188, T^3149, 0, 0, 0, 0,
+0, 0, 0, 0, T^7166, T^13908, 0, 0, 0, 0, 0, 0, T^2060, T^3543, 0, 0, 0, 0, 0, 0,
+0, 0, T^2357, T^6253, 0, 0, 0, 0, 0, 0, T^10049, T^2386, 0, 0, 0, 0, 0, 0, 0, 0,
+T^14697, T^14329, 0, 0, 0, 0, 0, 0, T^12813, T^13402 ]);
+
+linear_3:=Matrix(Fq,8,8,[ T^11820, T^8551, 0, 0, 0, 0, 0, 0, T^9673, T^12571, 0, 0, 0, 
+0, 0, 0, 0, 0, T^10164, T^6347, 0, 0, 0, 0, 0, 0, T^5618, T^3777, 0, 0, 0, 0, 0,
+0, 0, 0, T^14823, T^10565, 0, 0, 0, 0, 0, 0, T^7946, T^8012, 0, 0, 0, 0, 0, 0, 
+0, 0, T^1967, T^8929, 0, 0, 0, 0, 0, 0, T^12273, T^9359 ]);
+
+trans_0:=Vector(Fq, [0: i in [1..8]]);
+trans_1:=Vector(Fq,[0: i in [1..8] ]);
+trans_2:=Vector(Fq, [0: i in [1..8]]);
+
+
+
+vector_weights_ex:=[1,1,2,3,4,5,6,6];
+
+vec_x_random_ex:=[ T^10110, T^6762, T^12328, T^14920, T^6238, T^13662, T^13508, T^9996 ];
+
+matrices_ex:=[E1,E2];
+linears_ex:=[linear_0,linear_1,linear_2];
+translation:=[trans_0,trans_1,trans_2];//in case there are affine maps 
