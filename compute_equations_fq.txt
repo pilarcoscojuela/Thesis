@@ -44,7 +44,7 @@ function power_mod(x, exp)
     return res;
 end function;
 
-// Tensor-like product: row i of E with vector v using function power_mod
+//Exponential map: row i of E with vector v using function power_mod
 function tensor_bis(E, v)
     n := NumberOfRows(E);
     out := [Zero(S) : i in [1..n]];
@@ -77,7 +77,7 @@ decompose_vector := function(vec)
     return out;
 end function;
 
-
+// Given a list, return the list obtained by removing an element of the original list if it has already appear on the list.
 function remove_duplicates(list)
     for j in [1..#list] do
     while exists(t){i : i in [1..#list]| list[i] ne 0 and i gt j and list[i] eq list[j]} do
@@ -93,8 +93,8 @@ function remove_duplicates(list)
     return list_2;
 end function;
 
-// Compute monomial list output from a exponential map (mat_exp) and the monomial list of the previous round (vec). 
-//Use extra_components if there are affine maps
+// Compute support of the polynomials from a exponential map (mat_exp) and the support of the polynomials of the previous round (vec). 
+// mat_extra_components if there are affine maps
 function compute_monomial_list(mat_exp, vec, mat_extra_components)
     rows := NumberOfRows(mat_exp);
     cols := NumberOfColumns(mat_exp);
@@ -137,8 +137,8 @@ function compute_monomial_lists_sequence(matrices, vec, extra_components)
     return M;
 end function;
 
-//Template lists
-list_q1:=[ S.i+u*S.(ctes+i): i in [1..ctes]];
+//Template lists: will be the formal coefficients of the vector of polynomials before the last exponential
+list_q1:=[S.i+u*S.(ctes+i): i in [1..ctes]];
 
 list_q2:=[S.(2*ctes+i)+u*S.(3*ctes+i): i in [1..num_par/8]];
 
@@ -187,16 +187,8 @@ function compute_public_key(linear_matrices, exp_matrices,initial_vector,extra_c
     return y_plus; 
 end function;
 
-function plus(linear_plus,vector,extra_component)
-    L_plus := Matrix(S, 16, 16, [S!linear_plus[i][j] : j in [1..16], i in [1..16]]);
-    L_plus_traspuesta := Transpose(L_plus);
-    T_plus:=Vector(S,[S!extra_component[j] :j in [1..16]]);
-    y := Vector(S,vector) * L_plus_traspuesta+T_plus;
-    y_red := [y[2*i - 1] + u * y[2*i] : i in [1..4]]; 
-    return ElementToSequence(y); 
-end function;
-
 // Given a polynomial, generate equations by grouping terms with the same monomial in the variables x_1,...,x_8
+
 function decompose_relation(rel)
     // rel is a polynomial in S.
     MA := AssociativeArray();
@@ -218,7 +210,7 @@ function decompose_relation(rel)
     return [MA[k] : k in remove_duplicates(keys_seq) ],[k: k in remove_duplicates(keys_seq)];
 end function;
 
-// Compute equations and relations with weight adjustments
+// Compute equations and relations that result when consider a specific vector of weights.
 function compute_weight_equations(vec_x_random,polys_front,weights)
     vars_w:=[S.((num_vars-num_t)+i): i in weights];
     evals:=[Evaluate(x,[S.i: i in [1..num_par+num_par_t+num_h+num_lin]] cat [vars_w[i]*vec_x_random[i]: i in [1..num_x]] cat [S.i: i in [num_vars-num_t+1..num_vars]]): x in polys_front];
@@ -252,13 +244,14 @@ end function;
 /*E.g. If Rt1b*Kt1 + T^12657*Rt1b*Lt1 + T^1839*St1b*Kt1 + T^9098*St1b*Lt1 
 + Rt3b*Kt3 + T^12657*Rt3b*Lt3 + T^1839*St3b*Kt3 + T^9098*St3b*Lt3 + T^10582 is a 
 polynomial in a list of list_seq then 
-unrolled_list will contain 
+unrolled_list_h will contain 
  Rt1b*Kt1 + T^12657*Rt1b*Lt1 + T^1839*St1b*Kt1 + T^9098*St1b*Lt1 
-+ H2 and 
++ H1 and 
 Rt3b*Kt3 + T^12657*Rt3b*Lt3 + T^1839*St3b*Kt3 + T^9098*St3b*Lt3 
-+ H3
-while  unrolled_list_h will contain
-H2 + H3 + T^10582*/
++ H1 + T^10582
+while  list_H will contain
+H1,
+H1 + T^10582*/
 
 
 
@@ -357,15 +350,6 @@ polys_front := polys_E2_seq_red;
 polys_weighted_front := polys_E2_weighted_seq_red;
 
 
-//Public key polynomials and also output after E3 because in DME minus last linear map 
-block_1:=Matrix(S,2,4,[S.(num_par+num_par_t+num_h+i): i in [1..8]]);
-block_2:=Matrix(S,2,4,[S.(num_par+num_par_t+num_h+8+i): i in [1..8]]);
-block_3:=Matrix(S,2,4,[S.(num_par+num_par_t+num_h+16+i): i in [1..8]]);
-block_4:=Matrix(S,2,4,[S.(num_par+num_par_t+num_h+24+i): i in [1..8]]);
-L_var_plus:=DiagonalJoin(DiagonalJoin(block_1,block_2),DiagonalJoin(block_3,block_4));
-polys_back :=ElementToSequence(Vector(S,public_key)*Transpose(L_var_plus));
-polys_weighted_back := ElementToSequence(Vector(S,weighted_public_key)*Transpose(L_var_plus));
-
 //System of equations
 polys_front := decompose_vector(polys_front);
 polys_relations := [polys_front[i] + polys_back[i] : i in [1..8]];
@@ -444,8 +428,6 @@ ecs:=restr(Minors(HorizontalJoin(mat_rk1, mat_rk2),3) cat Minors(VerticalJoin(ma
 GroebnerBasis(ecs cat [z[265]+1,z[269]]);// no es cero dim
 
 
-
-//para verlo sobre fq2, dme completo en remove collisions fq2
 
 
 
