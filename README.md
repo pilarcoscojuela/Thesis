@@ -1,16 +1,14 @@
-# Thesis experimental results
+# Thesis Experimental Results
 
-This repository contains some of the Magma code using in the thesis: Security Analysis of the Family of DME Schemes. Because Magma V2.21-5 does not support exponents larger than 2^(30), our examples works over finite fieldd F_q with q up to  2^8 and 2^14 in some cases.
+This repository contains Magma code used in the thesis “Security Analysis of the Family of DME Schemes.” Because Magma V2.21-5 does not support exponents larger than 2^30, the examples operate over finite fields F_q with q up to 2^8 (and up to 2^14 in some cases).
 
-# Branches:
-- DME: shows how to model the collision recovery in DME by computing the minors of order two of a matrix. It corresponds to Chapter 4 in the thesis.
-- DME_minus_2_entries: shows how to model the collision recovery in DME minus by computing the minors of order three of a matrix, in the case that the considered rows of the matrix corresponding to the last exponential map does not have more than two entries per row. It corresponds to Chapter 5 in the thesis.
-- DME_minus_3_entries:  shows how to model the collision recovery in DME minus by computing the minors of order three of a matrix, for an instance where all the rows of the matrix corresponding to the last exponenetial map have three entries. It corresponds to Chapter 5 in the thesis.
-- DME_plus: compute the system of equations of the version of DME plus that consists of adding two extra polynomials per component. Therefore, the final linear map is given by a matrix 16x16. The systems of equations are still unsolved as Gröbner basis computation does not finish on Magma.It corresponds to the DME plus section of Chapter 6. 
-- DME_w: It is still in progress but corresponds to the section of DME_w in Chapter 5.
-- recovery_variables_3ent: illustrate section recovery variables before the last exponential of Chapter 5 in the case the system of equations corresponds to a row of the matrix with three non zero entries.
-
+## Branches
+- DME: shows how to model collision recovery in DME by computing the 2-order minors of a matrix; corresponds to Chapter 4 of the thesis.
+- DME_minus_2_entries: models collision recovery in DME minus by computing the 3-order minors of a matrix when the rows of the matrix corresponding to the last exponential map have at most two nonzero entries per row; corresponds to Chapter 5.
+- DME_minus_3_entries: models collision recovery in DME minus by computing the 3-minors of a matrix for an instance where all rows of the matrix corresponding to the last exponential map have three nonzero entries; corresponds to Chapter 5.
+- DME_plus: computes the system of equations for the DME plus variant that adds two extra polynomials per component; the final linear map is 16×16. These systems remain unsolved because Gröbner basis computation does not finish in Magma; corresponds to the DME+ section of Chapter 6.
+- DME_w: work in progress; corresponds to the DME_w section in Chapter 6.
+- recovery_variables_3ent: illustrates the “recovery of variables before the last exponential” section of Chapter 5 for a system where a matrix row has three nonzero entries.
 
 ## Notes
-Visit 
-https://blogs.mat.ucm.es/dme/ for a precise definition of DME minus.
+For a precise definition of DME, see https://blogs.mat.ucm.es/dme/
