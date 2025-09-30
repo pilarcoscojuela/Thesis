@@ -1,0 +1,6 @@
+
+
+list_w_1:=reduce_vector_S([x^(4):x in list_w_1]);
+list_w_2:=reduce_vector_S([x^32: x in list_w_2]);
+list_w_3:=reduce_vector_S([x^(2^6):x in list_w_3]);
+list_w_4:=reduce_vector_S([x:x in list_w_4]);
