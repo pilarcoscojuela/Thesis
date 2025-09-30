@@ -1,4 +1,4 @@
-load "initial_weights.mag";
+load "initial_weights.txt";
 
 //////////////////////////////////////////
 
