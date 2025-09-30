@@ -1,0 +1,99 @@
+// Initialize constants and fields
+n := 10;
+q := 2^n;
+Fq<T> := FiniteField(q); // T is the generator of Fq
+p := PrimitivePolynomial(Fq, 2);
+Sq<x> := PolynomialRing(Fq);
+Sq!p;
+
+Fq2<u> := ext<Fq | p>; // Fq2 is an extension of Fq
+AssertAttribute(Fq2, "PowerPrinting", false);
+
+
+prefixes := ["R","S", "K", "L","Z","W","X","Y"]; 
+prefixes_t := ["Rt","St", "Kt", "Lt","Zt","Wt","Xt","Yt"];
+ctes:=35;
+ctes_t:=6;
+num_par:=#prefixes*ctes;
+num_par_t:=#prefixes_t*ctes_t;
+num_h:=80;
+num_x:=8;
+num_t:=8;
+
+
+num_vars := num_par+num_par_t+num_h+num_x+num_t; 
+
+num_vars_Sr:=num_par_t+num_h;
+S<[x]> := PolynomialRing(Fq2, num_vars);
+
+// Assign names to variables of the polynomial ring S
+names := [];
+for x in prefixes do
+    names cat:= &cat[[x cat IntegerToString(i)]: i in [1..ctes]];
+end for;
+for x in prefixes_t do
+    names cat:= &cat[[x cat IntegerToString(i)]: i in [1..ctes_t]];
+end for;
+for i in [1..num_h] do
+names cat:=["H" cat IntegerToString(i)];
+end for;
+for i in [1..num_x] do
+names cat:=["x" cat IntegerToString(i)];
+end for;
+for j in [1..num_t] do
+names cat:=["t" cat IntegerToString(j)];
+end for;
+
+
+AssignNames(~S, names);
+
+P<[y]>:= PolynomialRing(BaseRing(S), Rank(S));
+Sr<[z]>:=PolynomialRing(BaseRing(S),num_par_t+num_h,"lex");
+Sh<[h]>:=PolynomialRing(BaseRing(S),num_h,"lex");
+// Define a ring homomorphism phi: R -> P that sends R.i to P.i.
+phi := hom<S -> P | [ S.i : i in [1..Rank(S)] ]>;
+psi := hom<P -> S | [ P.i : i in [1..Rank(S)] ]>;
+
+restr:=hom<S -> Sr | [Sr!0: i in [1..num_par]] cat [ Sr.i : i in [1..(num_par_t+num_h)] ] cat [Sr!0: i in [num_par+num_par_t+num_h+1..num_vars]] >;
+inv_restr:=hom<Sr -> S| [S.(num_par+i): i in [1..num_vars_Sr]] >;
+restrh:=hom<Sr -> Sh |  [Sh!0: i in [1..num_par_t]] cat [Sh.i: i in [1..num_h]] >;
+  
+
+E1:=Matrix(4,4,[ 1, 32, 16, 0, 0, 1, 524288, 32, 0, 1, 0, 0, 0, 0, 1, 0 ]); 
+E2:=Matrix(4,4,[ 1, 0, 32, 0, 1, 0, 0, 16, 0, 1, 1, 0, 0, 0, 0, 1 ]); 
+E3:=Matrix(4,4,[ 524288, 524288, 16, 0, 8192, 8192, 0, 16384, 16384, 0, 524288,
+262144, 0, 2, 64, 32 ]); 
+
+
+
+linear_0:=Matrix(Fq,8,8,[ T^998, T^530, 0, 0, 0, 0, 0, 0, T^740, T^398, 0, 0, 0, 0, 0, 
+0, 0, 0, T^985, T^745, 0, 0, 0, 0, 0, 0, T^40, T^418, 0, 0, 0, 0, 0, 0, 0, 0, 
+T^163, T^108, 0, 0, 0, 0, 0, 0, T^183, T^101, 0, 0, 0, 0, 0, 0, 0, 0, T^504, 
+T^5, 0, 0, 0, 0, 0, 0, T^227, T^424 ]);
+linear_1:=Matrix(Fq,8,8,[ T^227, T^145, 0, 0, 0, 0, 0, 0, T^745, T^806, 0, 0, 0, 0, 0, 
+0, 0, 0, T^126, T^535, 0, 0, 0, 0, 0, 0, T^246, T^664, 0, 0, 0, 0, 0, 0, 0, 0, 
+T^692, T^551, 0, 0, 0, 0, 0, 0, T^583, T^748, 0, 0, 0, 0, 0, 0, 0, 0, T^248, 
+T^987, 0, 0, 0, 0, 0, 0, T^147, T^382 ]);
+linear_2:=Matrix(Fq,8,8,[ T^634, T^732, 0, 0, 0, 0, 0, 0, T^288, T^1018, 0, 0, 0, 0, 0,
+0, 0, 0, T^181, T^345, 0, 0, 0, 0, 0, 0, T^754, T^955, 0, 0, 0, 0, 0, 0, 0, 0, 
+T^261, T^246, 0, 0, 0, 0, 0, 0, T^206, T^85, 0, 0, 0, 0, 0, 0, 0, 0, T^474, 
+T^906, 0, 0, 0, 0, 0, 0, T^220, T^357 ]);
+linear_3:=Matrix(Fq,8,8,[ T^284, T^712, 0, 0, 0, 0, 0, 0, T^602, T^140, 0, 0, 0, 0, 0, 
+0, 0, 0, T^77, T^808, 0, 0, 0, 0, 0, 0, T^758, T^181, 0, 0, 0, 0, 0, 0, 0, 0, 
+T^540, T^765, 0, 0, 0, 0, 0, 0, T^274, T^219, 0, 0, 0, 0, 0, 0, 0, 0, T^481, 
+T^129, 0, 0, 0, 0, 0, 0, T^315, T^620 ]);
+
+trans_0:=Vector(Fq, [0: i in [1..8]]);
+trans_1:=Vector(Fq,[0: i in [1..8]]);
+trans_2:=Vector(Fq, [0: i in [1..8]]);
+trans_3:=Vector(Fq, [0: i in [1..8]]);
+
+
+
+vector_weights_ex:=[1,1,2,2,3,4,5,6];
+
+vec_x_random_ex:=[ T^981, T^118, T^462, T^513, T^131, T^816, T^534, T^361 ];
+
+matrices_ex:=[E1,E2,E3];
+linears_ex:=[linear_0,linear_1,linear_2,linear_3];
+translation:=[trans_0,trans_1,trans_2, trans_3];//in case there are affine maps 
