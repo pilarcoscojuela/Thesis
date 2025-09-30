@@ -1,0 +1,138 @@
+// Initialize constants and fields
+n := 14;
+q := 2^n;
+Fq<T> := FiniteField(q); // T is the generator of Fq
+p := PrimitivePolynomial(Fq, 2);
+Sq<x> := PolynomialRing(Fq);
+Sq!p;
+
+Fq2<u> := ext<Fq | p>; // Fq2 is an extension of Fq
+AssertAttribute(Fq2, "PowerPrinting", false);
+
+
+prefixes := ["R","S", "K", "L","Z","W","X","Y"]; 
+prefixes_t := ["Rt","St", "Kt", "Lt","Zt","Wt","Xt","Yt"];
+ctes:=35;
+ctes_t:=15;
+
+
+num_par:=#prefixes*ctes;
+num_par_t:=#prefixes_t*ctes_t;
+
+num_h:=500;
+num_lin:=48;
+num_x:=8;
+num_t:=8;
+
+
+
+num_vars := num_par+num_par_t+num_h+num_lin+num_x+num_t; 
+num_vars_Sr:=num_par_t+num_h+num_lin;
+
+S<[x]> := PolynomialRing(Fq2, num_vars);
+
+// Assign names to variables of the polynomial ring S
+names := [];
+for x in prefixes do
+    names cat:= &cat[[x cat IntegerToString(i)]: i in [1..ctes]];
+end for;
+for x in prefixes_t do
+    names cat:= &cat[[x cat IntegerToString(i)]: i in [1..ctes_t]];
+end for;
+for i in [1..num_h] do
+names cat:=["H" cat IntegerToString(i)];
+end for;
+for i in [1..num_lin] do
+names cat:=["a" cat IntegerToString(i)];
+end for;
+for i in [1..num_x] do
+names cat:=["x" cat IntegerToString(i)];
+end for;
+for j in [1..num_t] do
+names cat:=["t" cat IntegerToString(j)];
+end for;
+
+
+AssignNames(~S, names);
+
+P<[y]>:= PolynomialRing(BaseRing(S), Rank(S));
+
+Sr<[z]>:=PolynomialRing(BaseRing(S),num_par_t+num_h+num_lin,"grevlex");
+// Define a ring homomorphism phi: R -> P that sends R.i to P.i.
+phi := hom<S -> P | [ S.i : i in [1..Rank(S)] ]>;
+psi := hom<P -> S | [ P.i : i in [1..Rank(S)] ]>;
+
+restr:=hom<S -> Sr | [Sr!0: i in [1..num_par]] cat [ Sr.i : i in [1..(num_par_t+num_h+num_lin)] ] cat [Sr!0: i in [num_par+num_par_t+num_h+num_lin+1..num_vars]] >;
+inv_restr:=hom<Sr -> S |  [ S.i : i in [(num_par+1)..(num_par+num_par_t+num_h+num_lin)] ] >;
+
+
+E1:=Matrix(4,4,[ 1, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 67108864, 0, 0, 1, 512 ]); 
+E2:=Matrix(4,4,[ 1, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 131072 ]); 
+E3:=Matrix(4,4,[ 4096, 4096, 0, 0, 16, 0, 16, 0, 0, 32768, 0, 32768, 0, 0, 
+524288, 4 ]); 
+
+
+
+//Random linear matrices invertible over Fq and by blocks 2x2 
+linear_0:=Matrix(Fq,8,8,[ T^13982, T^14568, 0, 0, 0, 0, 0, 0, T^13333, T^6209, 0, 0, 0,
+0, 0, 0, 0, 0, T^3724, T^209, 0, 0, 0, 0, 0, 0, T^13569, T^4955, 0, 0, 0, 0, 0, 
+0, 0, 0, T^13490, T^8048, 0, 0, 0, 0, 0, 0, T^2913, T^9725, 0, 0, 0, 0, 0, 0, 0,
+0, T^14304, T^11700, 0, 0, 0, 0, 0, 0, T^13447, T^9550 ]);
+linear_1:=Matrix(Fq,8,8,[ T^7667, T^8490, 0, 0, 0, 0, 0, 0, T^2710, T^6094, 0, 0, 0, 0,
+0, 0, 0, 0, T^4806, T^4025, 0, 0, 0, 0, 0, 0, T^7006, T^14653, 0, 0, 0, 0, 0, 0,
+0, 0, T^16102, T^11554, 0, 0, 0, 0, 0, 0, T^11313, T^22, 0, 0, 0, 0, 0, 0, 0, 0,
+T^11566, T^11619, 0, 0, 0, 0, 0, 0, T^2039, T^15016 ]);
+linear_2:=Matrix(Fq,8,8,[ T^4747, T^4077, 0, 0, 0, 0, 0, 0, T^5188, T^3149, 0, 0, 0, 0,
+0, 0, 0, 0, T^7166, T^13908, 0, 0, 0, 0, 0, 0, T^2060, T^3543, 0, 0, 0, 0, 0, 0,
+0, 0, T^2357, T^6253, 0, 0, 0, 0, 0, 0, T^10049, T^2386, 0, 0, 0, 0, 0, 0, 0, 0,
+T^14697, T^14329, 0, 0, 0, 0, 0, 0, T^12813, T^13402 ]);
+
+linear_3:=Matrix(Fq,24,24, [ T^551, T^2168, T^5803, T^9567, T^11092, T^12900, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+0, 0, 0, 0, 0, 0, 0, 0, T^7029, T^13992, T^1419, T^13654, T^14295, T^13387, 0, 
+0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, T^13135, T^38, T^10933, 
+T^239, T^11174, T^181, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+T^12761, T^8058, T^12890, T^5868, T^6002, T^10523, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+0, 0, 0, 0, 0, 0, 0, 0, T^11756, T^5346, T^5109, T^15964, T^505, T^15271, 0, 0, 
+0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, T^6380, T^2477, T^10260, T^1893,
+T^2173, T^2946, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+0, 0, 0, T^1581, T^4962, T^4034, T^3595, T^3474, T^4519, 0, 0, 0, 0, 0, 0, 0, 0,
+0, 0, 0, 0, 0, 0, 0, 0, 0, 0, T^8822, T^15941, T^6478, T^10414, T^3053, T^6297, 
+0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, T^6966, T^7510, T^8741, 
+T^6071, T^15695, T^3036, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+T^13011, T^11215, T^12335, T^12085, T^4138, T^2181, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+0, 0, 0, 0, 0, 0, 0, 0, 0, T^2738, T^10329, T^4916, T^11887, T^10588, T^6995, 0,
+0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, T^13916, T^12261, T^14029, 
+T^8435, T^15301, T^8531, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+0, 0, 0, 0, 0, 0, T^9468, T^11966, T^12413, T^2397, T^2700, T^5028, 0, 0, 0, 0, 
+0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, T^13253, T^16346, T^9902, T^694, 
+T^2935, T^4053, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, T^3153, 
+T^5125, T^3210, T^13476, T^2290, T^9391, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+0, 0, 0, 0, 0, T^10733, T^5743, T^2027, T^11400, T^3168, T^11497, 0, 0, 0, 0, 0,
+0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, T^10952, T^9148, T^12588, T^6036, 
+T^15974, T^2960, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, T^9603, 
+T^5993, T^1096, T^4013, T^2372, T^13373, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, T^10305, T^14495, T^16167, T^3878, T^11569, 
+T^1779, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, T^3332, T^5582, 
+T^6510, T^435, T^15682, T^5855, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+0, 0, T^12519, T^5632, T^476, T^6220, T^11442, T^6649, 0, 0, 0, 0, 0, 0, 0, 0, 
+0, 0, 0, 0, 0, 0, 0, 0, 0, 0, T^15415, T^7155, T^13256, T^14276, T^14761, 
+T^6093, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, T^7584, T^8889, 
+T^15989, T^12046, T^6757, T^8024, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+0, 0, 0, T^6264, T^8566, T^14880, T^12016, T^7659, T^11086 ]
+);
+
+trans_0:=Vector(Fq, [0: i in [1..8]]);
+trans_1:=Vector(Fq,[0: i in [1..8]]);
+trans_2:=Vector(Fq, [Random(Fq),Random(Fq),0,0,0,0,Random(Fq),Random(Fq)]);
+trans_3:=Vector(Fq, [0: i in [1..24]]);
+
+vector_weights_ex:=[1,1,2,3,4,5,6,6];
+
+//vector_weights_ex:=[1,1,2,2,3,3,4,4];
+
+vec_x_random_ex:=[ 1: i in [1..8]];
+
+matrices_ex:=[E1,E2,E3];
+linears_ex:=[linear_0,linear_1,linear_2];
+translation:=[trans_0,trans_1,trans_2];//in case there are affine maps 
+translation_0:=[Vector(Fq, [0: i in [1..8]]): j in [1..3]];
