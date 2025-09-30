@@ -1,0 +1,460 @@
+load "initial_pesos.mag";
+
+//////////////////////////////////////////
+
+//Functions
+
+
+reducir_exponentes_S := function(polinomio)
+    terminos_polinomio := Terms(polinomio);
+    variables := [S.i : i in [1..num_vars]];
+    polinomio_reducido := Zero(S);
+    
+    for termino in terminos_polinomio do
+        // Compute exponent vector with reductions
+        vector_deg := [Degree(termino, var) mod (q - 1) : var in variables];
+        
+        // Extract the coefficient and construct the reduced term
+        coef := Coefficients(termino)[1];
+        polinomio_reducido +:= coef * Monomial(S, vector_deg);
+    end for;
+    
+    return polinomio_reducido;
+end function;
+
+
+reducir_vector_S := function(vector_polinomios)
+    return [reducir_exponentes_S(vector_polinomios[i]) : i in [1..#vector_polinomios]];
+end function;
+
+/*elevar:=function(x,exp)
+res:=x;
+j:=1;
+while j lt exp do
+  res:=reducir_exponentes_S(res^2);
+  j*:=2;
+end while;
+return res;
+end function;
+*/
+elevar := function(x, exp)
+    // Base case: if exp is 1, return x
+    if exp eq 1 then
+        return x;
+    end if;
+
+    // Compute q and modulus (q-1) for reduction
+    //q := 2^14; // Replace 8 with your actual n
+    modulus := q - 1;
+
+    // Precompute the effective exponent (2^k mod (q-1))
+    k := Ilog2(exp); // Number of squarings needed
+    effective_exp := Modexp(2, k, modulus);
+    if effective_exp eq 0 then
+        effective_exp := modulus;
+    end if;
+
+    // Compute x^(effective_exp) using exponentiation by squaring
+    res := x;
+    remaining_squarings := k;
+    batch_size := 7; // Adjust based on q (e.g., for q=256, 2^7=128 < 255)
+    
+    while remaining_squarings gt 0 do
+        current_batch := Minimum(batch_size, remaining_squarings);
+        
+        // Square the result 'current_batch' times without reduction
+        for i in [1..current_batch] do
+            res := res^2;
+        end for;
+        
+        // Reduce exponents modulo (q-1) after the batch
+        res := reducir_exponentes_S(res);
+        remaining_squarings -:= current_batch;
+    end while;
+
+    return res;
+end function;
+
+tensor_bis := function(E, v)
+    m := NumberOfRows(E);
+    n:=NumberOfColumns(E);
+    vector_resultado := [Zero(S): i in [1..m]];
+    for i in [1..m] do
+        vector_resultado[i] := &*[elevar(v[j],E[i][j]) : j in [1..n] | E[i][j] ne 0];
+    end for;
+    return vector_resultado;
+end function;
+
+descom_Su := function(p)
+    p1 := 0;
+    p2 := 0;
+    coefs := Coefficients(p);
+    mons := Monomials(p);
+    
+    for i in [1..#coefs] do
+        seq := ElementToSequence(coefs[i]);
+        p1 +:= seq[1] * mons[i];
+        p2 +:= seq[2] * mons[i];
+    end for;
+    
+    return [p1, p2];
+end function;
+
+descomv := function(vector_polinomios)
+    l := [];
+    for i in [1..#vector_polinomios] do
+        l := l cat descom_Su(vector_polinomios[i]);
+    end for;
+    return l;
+end function;
+
+
+eliminar_repetidos:=function(lista)
+    for j in [1..#lista] do
+    while exists(t){i : i in [1..#lista]| lista[i] ne 0 and i gt j and lista[i] eq lista[j]} do
+        lista[t]:=0;
+    end while;
+    end for;
+    lista2:=[];
+    for i in [1..#lista] do
+        if lista[i] ne 0 then
+            lista2:= lista2 cat [lista[i]];
+        end if;
+    end for;
+    return lista2;
+end function;
+
+calculo_lista_monomios := function(mat_exponencial, vector, extra_components)
+    numero_filas := NumberOfRows(mat_exponencial);
+    numero_columnas := NumberOfColumns(mat_exponencial);
+    
+    M1 := [[] : i in [1..numero_filas]];
+    M := [[] : i in [1..numero_filas]];
+    
+    // Create a copy of vector and modify it for extra components
+    modified_vector := vector;
+    for i in extra_components do
+        modified_vector[i] := modified_vector[i] cat [1];
+    end for;
+
+    for i in [1..numero_filas] do
+        for j in [1..numero_columnas] do
+            if mat_exponencial[i][j] ne 0 then
+                exps := [elevar(modified_vector[j][k],mat_exponencial[i][j]) : k in [1..#modified_vector[j]]];
+                M1[i] := M1[i] cat [exps];
+            end if;
+        end for;
+        
+        if #M1[i] gt 0 then
+            // Compute all possible products of elements in M1[i]
+            M[i] := [&*[terms[k] : k in [1..#terms]] : terms in CartesianProduct(M1[i])];
+        end if;
+    end for;
+
+    return [reducir_vector_S(M[j]) : j in [1..#M]];
+end function;
+
+
+
+calculo_listas_monomios_secuencia := function(matrices, vector, extra_components)
+    num_matrices := #matrices;
+    M := vector;
+
+    for i in [1..num_matrices] do
+        M := calculo_lista_monomios(matrices[i], M, extra_components);
+
+        // Remove duplicates from each list
+        M := [eliminar_repetidos(x) : x in M];
+    end for;
+
+    return M;
+end function;
+
+
+/*
+
+funcion_pesos := function(pub_key,monomios_secuencia,pesos)
+    M :=monomios_secuencia;
+    pub_key:=pub_key;
+    var_pesos:=[S.((num_vars-num_t)+i): i in pesos];
+    M:=[[Evaluate(x,[S.i: i in [1..num_par+num_h]] cat [var_pesos[i]: i in [1..num_x]] cat [S.i: i in [num_vars-num_t+1..num_vars]]): x in M[i]]: i in [1..#M]];
+    M := [eliminar_repetidos(x) : x in M];
+    pub_key_p:=[Evaluate(x,[S.i: i in [1..num_par+num_h]] cat [var_pesos[i]*Random(Fq): i in [1..num_x]] cat [S.i: i in [num_vars-num_t+1..num_vars]]): x in pub_key]; 
+    pub_key_p:=reducir_vector_S(pub_key_p);
+
+    return pub_key_p,M;
+end function;
+
+*/
+
+lista_q1:=[ S.i: i in [1..ctes]];
+lista_q2:=[ S.(ctes+i): i in [1..ctes]];
+lista_q3:=[S.(2*ctes+i): i in [1..num_par/8]];
+lista_q4:=[S.(3*ctes+i): i in [1..num_par/8]];
+lista_q5:=[S.(4*ctes+i): i in [1..num_par/8]];
+lista_q6:=[S.(5*ctes+i): i in [1..num_par/8]];
+lista_q7:=[S.(6*ctes+i): i in [1..num_par/8]];
+lista_q8:=[S.(7*ctes+i): i in [1..num_par/8]];
+
+lista_q := [lista_q1, lista_q2, lista_q3, lista_q4, lista_q5, lista_q6, lista_q7, lista_q8];
+
+polinomios_penul := function(monomios_q)
+    //print "Inside polinomios_penul: monomios_q = ", monomios_q;
+    lista_polinomios_q := [];
+    for i in [1..#monomios_q] do
+        l_q := lista_q[i];
+        //print "l_q[", i, "] =", l_q;  // Check its structure
+        polinomio := &+[l_q[j] * monomios_q[i][j] : j in [1..#monomios_q[i]]];
+        Append(~lista_polinomios_q, polinomio);
+    end for;
+    return lista_polinomios_q;
+end function;
+
+
+
+
+compute_public_key := function(linear_matrices, exp_matrices,vector_inicial)
+    //S := Parent(vector_inicial[1]); // Extract the coefficient ring
+    num_matrices := #linear_matrices;
+
+    // Compute initial L0 transformation
+    L0_S := Matrix(S, 8, 8, [S!linear_matrices[1][i][j] : j in [1..8], i in [1..8]]);
+    L0_traspuesta := Transpose(L0_S);
+    // First vector transformation
+    y := vector_inicial * L0_traspuesta;
+    y := ElementToSequence(y);
+    // Iteratively compute through all matrices
+    for i in [2..num_matrices] do
+        y := tensor_bis(exp_matrices[i-1], y);
+        y := ElementToSequence(reducir_vector_S(y));
+        L_next := Matrix(S, 8, 8, [S!linear_matrices[i][j][k] : k in [1..8], j in [1..8]]);
+        y := Vector(S, y) * Transpose(L_next);
+        y := ElementToSequence(y);
+        y;
+    end for;
+
+    return y; // Final public key
+end function;
+
+
+
+
+
+relac := function(in_relacion)
+    // in_relacion is a polynomial in S.
+    // Global variables: 
+    //   num_par: number of active parameters,
+    //   num_h:  number of dummy variables (set to 0 or 1),
+    //   num_vars: total number of variables in S,
+    //   S: the polynomial ring.
+    // The substitution: for indices 1..(num_par+num_h) we set 1,
+    // and for indices num_par+num_h+1..num_vars we use the corresponding S.i.
+    
+    // Create an associative array to accumulate results.
+    MA := AssociativeArray();
+    
+    // Get the terms of in_relacion.
+    lista_terminos := Terms(in_relacion);
+    
+    // Loop over each term.
+    for j in [1..#lista_terminos] do
+        // Extract the monomial part of the j-th term.
+        mon_j := Monomials(lista_terminos[j])[1];
+        // Compute the "key" by evaluating mon_j under the substitution:
+        // first num_par+num_h variables -> 1, and the rest remain as variables.
+        key := Evaluate(mon_j, [1 : i in [1..num_par+num_par_t+num_h+num_lin]] cat [S.i : i in [num_par+num_par_t+num_h+num_lin+1..num_vars]]);
+        // Compute the coefficient part for the term under a different substitution:
+        // for the first num_par variables use S.i and for the rest, 1.
+        coeff := Evaluate(lista_terminos[j], [S.i : i in [1..num_par+num_par_t+num_h+num_lin]] cat [1 : i in [num_par+num_par_t+num_h+num_lin+1..num_vars]]);
+        
+        // Accumulate: if key already exists, add; otherwise, set it.
+        if IsDefined(MA, key) then
+            MA[key] := MA[key] + coeff;
+        else
+            MA[key] := coeff;
+        end if;
+    end for;
+    
+    // Return a list of pairs <key, accumulated coefficient>
+    //return [ <k, MA[k]> : k in Keys(MA) ];
+    return [MA[k] : k in Keys(MA) ],[k: k in Keys(MA)];
+
+end function;
+
+ecuaciones_pesos:=function(vec_x_random,pol_antes,pesos)
+var_pesos:=[S.((num_vars-num_t)+i): i in pesos];
+list_pol:=[Evaluate(x,[S.i: i in [1..num_par+num_par_t+num_h+num_lin]] cat [var_pesos[i]*vec_x_random[i]: i in [1..num_x]] cat [S.i: i in [num_vars-num_t+1..num_vars]]): x in pol_antes];
+list_pol_t:=[];
+list_relac_t:=[];
+for j in [1..#list_pol] do
+x:=list_pol[j];
+k:=num_par+(j-1)*ctes_t;
+list_x,key:=relac(x);
+relac_t:=[list_x[i]+S.(k+i) : i in [1..#list_x] ];
+p:=x+(&+[relac_t[i]*key[i]: i in [1..#list_x]]);
+list_pol_t cat:=[p];
+list_relac_t cat:=[relac_t];
+end for;
+return list_relac_t,list_pol_t;
+end function;
+
+pub_key_pesos := function(vec_x_random,pub_key,pesos)
+    pub_key:=pub_key;
+    var_pesos:=[S.((num_vars-num_t)+i): i in pesos];
+    pub_key_p:=[Evaluate(x,[S.i: i in [1..num_par+num_par_t+num_h+num_lin]] cat [var_pesos[i]*vec_x_random[i]: i in [1..num_x]] cat [S.i: i in [num_vars-num_t+1..num_vars]]): x in pub_key]; 
+    pub_key_p:=reducir_vector_S(pub_key_p);
+
+    return pub_key_p;
+end function;
+
+///main program
+
+
+vector_inicial := Vector(S, [S.(num_par+num_par_t+num_h+num_lin+i) : i in [1..num_x]]);
+
+pub_key:=compute_public_key(linears_ex,matrices_ex,vector_inicial); 
+
+M0_E0f:= &cat[[[S.(2*i-1),S.(2*i)],[S.(2*i-1),S.(2*i)]] : i in [(num_h+num_par+num_par_t+num_lin)/2+1..(num_vars-num_t)/2]];
+
+M2_E2f:=calculo_listas_monomios_secuencia(Prune(matrices_ex),M0_E0f,translation);
+
+
+pub_key_p:=pub_key_pesos(vec_x_random_ex,pub_key,vector_pesos_ex);
+
+polinomios_antes := polinomios_penul(M2_E2f); 
+
+ 
+ecuaciones_p,polinomios_antes_p := ecuaciones_pesos(vec_x_random_ex,polinomios_antes,vector_pesos_ex);
+
+polinomios_antes_seq := ElementToSequence(tensor_bis(Reverse(matrices_ex)[1], polinomios_antes));
+polinomios_antes_red := reducir_vector_S(polinomios_antes_seq);
+polinomios_antes_p_seq := ElementToSequence(tensor_bis(Reverse(matrices_ex)[1], polinomios_antes_p));
+polinomios_antes_p_red := reducir_vector_S(polinomios_antes_p_seq);
+
+
+Z4_delante := polinomios_antes_red;
+Z4_delante_p := polinomios_antes_p_red;
+
+
+Z4_detras := [&+[S.(8*(j-1)+i+(num_vars-num_lin_b-num_lin_a-num_x-num_t))*pub_key[i] : i in [1..8]]: j in [1..8]];
+Z4_detras_p := [&+[S.(8*(j-1)+i+(num_vars-num_lin_b-num_lin_a-num_x-num_t))*pub_key_p[i] : i in [1..8]]: j in [1..8]];;
+
+
+
+
+Z4_relaciones := [Z4_delante[i] + Z4_detras[i] : i in [1..8]];
+
+Z4_relaciones_p := [Z4_delante_p[i] + Z4_detras_p[i] : i in [1..8]];
+
+
+relaciones := Z4_relaciones;
+relaciones_p := Z4_relaciones_p;
+
+
+
+// Compute final equations
+lista_1 := relac(relaciones[1]);
+lista_2 := relac(relaciones[2]);
+lista_3 := relac(relaciones[3]);
+lista_4 := relac(relaciones[4]);
+lista_5 := relac(relaciones[5]);
+lista_6 := relac(relaciones[6]);
+lista_7 := relac(relaciones[7]);
+lista_8 := relac(relaciones[8]);
+
+
+st3:=Sprintf("lista_1:=%o;\nlista_2:=%o;\nlista_3:=%o;\nlista_4:=%o;\nlista_5:=%o;\nlista_6:=%o;\nlista_7:=%o;\nlista_8:=%o;\n",lista_1,lista_2,lista_3,lista_4,lista_5,lista_6,lista_7,lista_8);
+
+PrintFile("original_system.txt",st3: Overwrite:=true);
+
+lista_1 := relac(relaciones_p[1]);
+lista_2 := relac(relaciones_p[2]);
+lista_3 := relac(relaciones_p[3]);
+lista_4 := relac(relaciones_p[4]);
+
+lista_5 := relac(relaciones_p[5]);
+lista_6 := relac(relaciones_p[6]);
+lista_7 := relac(relaciones_p[7]);
+lista_8 := relac(relaciones_p[8]);
+
+
+
+
+function unroll(list_of_lists)
+cont:=0;
+unroll_lists:=[];
+unroll_lists_h:=[];
+for list in list_of_lists do 
+indpt_term:=[Evaluate(x,[0 : i in [1..num_vars]]): x in list];
+list_hom:=[list[i]+indpt_term[i]: i in [1..#list]];
+unroll_list:=[];
+unroll_list_h:=[];
+list_eval_repr_a:=[0: i in [1..num_par]] cat &cat[[S.(num_par+i): i in [4*(k-1)*ctes_t+1..(4*k-3)*ctes_t]] cat [0: i in [4*(k-1)*ctes_t+1..(4*k-3)*ctes_t]] cat [0: i in [4*(k-1)*ctes_t+1..(4*k-3)*ctes_t]] cat [0: i in [4*(k-1)*ctes_t+1..(4*k-3)*ctes_t]] : k in [1..2] ] 
+ cat [0: i in [num_par+num_par_t+1..num_par+num_par_t+num_h]] cat [S.i: i in [num_par+num_par_t+num_h+1..num_vars-num_x-num_t]] cat  [0: i in [num_vars-num_x-num_t+1..num_vars]];
+list_eval_repr:=[0: i in [1..num_par]] cat &cat[[S.(num_par+i): i in [4*(k-1)*ctes_t+1..(4*k-3)*ctes_t]] cat [0: i in [4*(k-1)*ctes_t+1..(4*k-3)*ctes_t]] cat [0: i in [4*(k-1)*ctes_t+1..(4*k-3)*ctes_t]] cat [0: i in [4*(k-1)*ctes_t+1..(4*k-3)*ctes_t]] : k in [1..2] ] 
+ cat [0: i in [num_par+num_par_t+1..num_par+num_par_t+num_h]] cat [1: i in [num_par+num_par_t+num_h+1..num_vars-num_x-num_t]] cat  [0: i in [num_vars-num_x-num_t+1..num_vars]];
+list_eval_conc:=[0: i in [1..num_par]] cat &cat[[S.(num_par+i): i in [4*(k-1)*ctes_t+1..(4*k-3)*ctes_t]] cat [S.(num_par+i): i in [4*(k-1)*ctes_t+1..(4*k-3)*ctes_t]] cat [S.(num_par+i): i in [4*(k-1)*ctes_t+1..(4*k-3)*ctes_t]] cat [S.(num_par+i): i in [4*(k-1)*ctes_t+1..(4*k-3)*ctes_t]] : k in [1..2] ] 
+ cat [0: i in [num_par+num_par_t+1..num_par+num_par_t+num_h]] cat [1: i in [num_par+num_par_t+num_h+1..num_vars-num_x-num_t]] cat  [0: i in [num_vars-num_x-num_t+1..num_vars]];
+    
+for j in [1..#list_hom] do
+ p_lin:=Evaluate(list_hom[j],list_eval_repr_a);
+ term:=Terms(list_hom[j]+p_lin);
+ L:=[S.(num_par+num_par_t+cont+j)+Terms(p_lin)[j]: j in [1..#Terms(p_lin)]];
+ cont+:=#L;
+ for y in term do
+ if exists(k){k : k in [1..#L] | Monomials(Evaluate(y,list_eval_conc))[1] eq Monomials(Evaluate(L[k],list_eval_repr))[1]} then
+L[k] +:=y;
+end if;
+end for;
+unroll_list cat:=L;
+unroll_list_h cat:=[&+[x: x in L]+list[j]];
+end for;
+unroll_lists cat:=[unroll_list];
+unroll_lists_h cat:=[unroll_list_h];
+end for;
+return unroll_lists, unroll_lists_h;
+end function;
+
+
+
+ecs,ecs_h:=unroll([lista_1,lista_2,lista_3,lista_4,lista_5,lista_6,lista_7,lista_8]);
+
+
+
+//load "simplify.txt";
+
+
+st1:=Sprintf("lista_1:=%o;\nlista_2:=%o;\nlista_3:=%o;\nlista_4:=%o;\nlista_5:=%o;\nlista_6:=%o;\nlista_7:=%o;\nlista_8:=%o;\nlista_1h:=%o;\nlista_2h:=%o;\nlista_3h:=%o;\nlista_4h:=%o;\nlista_5h:=%o;\nlista_6h:=%o;\nlista_7h:=%o;\nlista_8h:=%o;\n",
+ecs[1],ecs[2],ecs[3],ecs[4],ecs[5],ecs[6],ecs[7],ecs[8],ecs_h[1],ecs_h[2],ecs_h[3],ecs_h[4],ecs_h[5],ecs_h[6],ecs_h[7],ecs_h[8]);
+/*st2:=Sprintf("rel_1:=%o;\nrel_2:=%o;\nrel_3:=%o;\nrel_4:=%o;",ecuaciones_p[1],ecuaciones_p[2],ecuaciones_p[3],ecuaciones_p[4]);
+*/
+
+
+
+
+//PrintFile("result_p.txt",st1: Overwrite:=true);
+/*
+
+st3:=Sprintf("lista_1:=%o;\nlista_2:=%o;\nlista_3:=%o;\nlista_4:=%o;\n",lista_1,lista_2,lista_3,lista_4);
+
+PrintFile("original_system.txt",st3: Overwrite:=true);
+
+
+System("python replace.py");
+
+load "sol_aut.txt";
+
+
+eval_list:=[S.i: i in [1..num_vars]];
+for k in Keys(ass) do
+    i:=Index(names,k);
+eval_list[i]:=ass[k];
+end for;
+//eval_list;
+ecuaciones_p_des:=descomv(&cat[x: x in ecuaciones_p]);
+linear_system:=[phi(Evaluate(x,eval_list)): x in ecuaciones_p_des];
+
+PrintFile("linear_system.txt",Sprint([linear_system]):Overwrite:=true);
+*/
+
+exit;
