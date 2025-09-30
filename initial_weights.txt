@@ -118,16 +118,7 @@ T^246, T^59, T^145, T^78, T^170, T^78 ]);
 
 vector_pesos_ex:=[1,1,2,3,4,5,6,6];
 vec_x_random_ex:=[T^2400,T^11609,T^8794,T^2559,T^1154,T^764,T^6672,T^9568];
-/*
 
-opcion más lenta
-x5:=(T^7515)^32;
-x8:=(T^6148)^128;
-x4:=(T^14151)^1024;
-x7:=(T^12269)^128;
-vec_x_random_ex:=[Random(Fq),Random(Fq),Random(Fq),x4,x5,Random(Fq),x7,x8];
-
-vec_x_random_ex:=[Random(Fq),Random(Fq),Random(Fq),T^2559,T^1154,Random(Fq),T^6672,T^9568];*/
 matrices_ex:=[E1,E2,E3];
 linears_ex:=[linear_0,linear_1,linear_2,linear_3];
 translation:=[];//para incluir translation hay que modificar tambien compute_public_key. translation es un vector de 4 comp.
