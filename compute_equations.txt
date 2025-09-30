@@ -389,7 +389,7 @@ st1:=Sprintf("list_w_1:=%o;\nlist_w_2:=%o;\nlist_w_3:=%o;\nlist_w_4:=%o;\n",list
 
 PrintFile("result.txt",st1: Overwrite:=true);
 //Remove exponents
-System("python remove_exp.py");
+System("python3 remove_exp.py");
 
 load "result_without_exp.txt";
 list_var_hr,ecs_hr:=unroll_lists([list_w_1,list_w_2,list_w_3,list_w_4],eval_r_diff);
