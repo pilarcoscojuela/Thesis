@@ -1,0 +1,95 @@
+list_w_1:=[
+Rt1*Kt3*Zt3^32 + T^929*Rt1*Kt3*Wt3^32 + T^159*Rt1*Lt3*Zt3^32 + 
+T^715*Rt1*Lt3*Wt3^32 + Rt2*Kt1*Zt3^32 + T^929*Rt2*Kt1*Wt3^32 + Rt2*Kt3*Zt4^32 + 
+T^929*Rt2*Kt3*Wt4^32 + T^159*Rt2*Lt1*Zt3^32 + T^715*Rt2*Lt1*Wt3^32 + 
+T^159*Rt2*Lt3*Zt4^32 + T^715*Rt2*Lt3*Wt4^32 + T^159*St1*Kt3*Zt3^32 + 
+T^715*St1*Kt3*Wt3^32 + T^985*St1*Lt3*Wt3^32 + T^159*St2*Kt1*Zt3^32 + 
+T^715*St2*Kt1*Wt3^32 + T^159*St2*Kt3*Zt4^32 + T^715*St2*Kt3*Wt4^32 + 
+T^985*St2*Lt1*Wt3^32 + T^985*St2*Lt3*Wt4^32 + T^19,
+Rt1*Kt1*Zt1^32 + T^929*Rt1*Kt1*Wt1^32 + Rt1*Kt3*Zt2^32 + T^929*Rt1*Kt3*Wt2^32 + 
+T^159*Rt1*Lt1*Zt1^32 + T^715*Rt1*Lt1*Wt1^32 + T^159*Rt1*Lt3*Zt2^32 + 
+T^715*Rt1*Lt3*Wt2^32 + Rt2*Kt1*Zt2^32 + T^929*Rt2*Kt1*Wt2^32 + Rt2*Kt2*Zt1^32 + 
+T^929*Rt2*Kt2*Wt1^32 + T^159*Rt2*Lt1*Zt2^32 + T^715*Rt2*Lt1*Wt2^32 + 
+T^159*Rt2*Lt2*Zt1^32 + T^715*Rt2*Lt2*Wt1^32 + T^159*St1*Kt1*Zt1^32 + 
+T^715*St1*Kt1*Wt1^32 + T^159*St1*Kt3*Zt2^32 + T^715*St1*Kt3*Wt2^32 + 
+T^985*St1*Lt1*Wt1^32 + T^985*St1*Lt3*Wt2^32 + T^159*St2*Kt1*Zt2^32 + 
+T^715*St2*Kt1*Wt2^32 + T^159*St2*Kt2*Zt1^32 + T^715*St2*Kt2*Wt1^32 + 
+T^985*St2*Lt1*Wt2^32 + T^985*St2*Lt2*Wt1^32 + T^507,
+Rt1*Kt1*Zt3^32 + T^929*Rt1*Kt1*Wt3^32 + Rt1*Kt3*Zt4^32 + T^929*Rt1*Kt3*Wt4^32 + 
+T^159*Rt1*Lt1*Zt3^32 + T^715*Rt1*Lt1*Wt3^32 + T^159*Rt1*Lt3*Zt4^32 + 
+T^715*Rt1*Lt3*Wt4^32 + Rt2*Kt1*Zt4^32 + T^929*Rt2*Kt1*Wt4^32 + Rt2*Kt2*Zt3^32 + 
+T^929*Rt2*Kt2*Wt3^32 + T^159*Rt2*Lt1*Zt4^32 + T^715*Rt2*Lt1*Wt4^32 + 
+T^159*Rt2*Lt2*Zt3^32 + T^715*Rt2*Lt2*Wt3^32 + T^159*St1*Kt1*Zt3^32 + 
+T^715*St1*Kt1*Wt3^32 + T^159*St1*Kt3*Zt4^32 + T^715*St1*Kt3*Wt4^32 + 
+T^985*St1*Lt1*Wt3^32 + T^985*St1*Lt3*Wt4^32 + T^159*St2*Kt1*Zt4^32 + 
+T^715*St2*Kt1*Wt4^32 + T^159*St2*Kt2*Zt3^32 + T^715*St2*Kt2*Wt3^32 + 
+T^985*St2*Lt1*Wt4^32 + T^985*St2*Lt2*Wt3^32 + T^299,
+Rt1*Kt1*Zt4^32 + T^929*Rt1*Kt1*Wt4^32 + Rt1*Kt2*Zt3^32 + T^929*Rt1*Kt2*Wt3^32 + 
+T^159*Rt1*Lt1*Zt4^32 + T^715*Rt1*Lt1*Wt4^32 + T^159*Rt1*Lt2*Zt3^32 + 
+T^715*Rt1*Lt2*Wt3^32 + Rt2*Kt2*Zt4^32 + T^929*Rt2*Kt2*Wt4^32 + 
+T^159*Rt2*Lt2*Zt4^32 + T^715*Rt2*Lt2*Wt4^32 + T^159*St1*Kt1*Zt4^32 + 
+T^715*St1*Kt1*Wt4^32 + T^159*St1*Kt2*Zt3^32 + T^715*St1*Kt2*Wt3^32 + 
+T^985*St1*Lt1*Wt4^32 + T^985*St1*Lt2*Wt3^32 + T^159*St2*Kt2*Zt4^32 + 
+T^715*St2*Kt2*Wt4^32 + T^985*St2*Lt2*Wt4^32 + T^308,
+Rt2*Kt3*Zt1^32 + T^929*Rt2*Kt3*Wt1^32 + T^159*Rt2*Lt3*Zt1^32 + 
+T^715*Rt2*Lt3*Wt1^32 + T^159*St2*Kt3*Zt1^32 + T^715*St2*Kt3*Wt1^32 + 
+T^985*St2*Lt3*Wt1^32 + T^449,
+Rt1*Kt2*Zt4^32 + T^929*Rt1*Kt2*Wt4^32 + T^159*Rt1*Lt2*Zt4^32 + 
+T^715*Rt1*Lt2*Wt4^32 + T^159*St1*Kt2*Zt4^32 + T^715*St1*Kt2*Wt4^32 + 
+T^985*St1*Lt2*Wt4^32 + T^26,
+Rt1*Kt1*Zt2^32 + T^929*Rt1*Kt1*Wt2^32 + Rt1*Kt2*Zt1^32 + T^929*Rt1*Kt2*Wt1^32 + 
+T^159*Rt1*Lt1*Zt2^32 + T^715*Rt1*Lt1*Wt2^32 + T^159*Rt1*Lt2*Zt1^32 + 
+T^715*Rt1*Lt2*Wt1^32 + Rt2*Kt2*Zt2^32 + T^929*Rt2*Kt2*Wt2^32 + 
+T^159*Rt2*Lt2*Zt2^32 + T^715*Rt2*Lt2*Wt2^32 + T^159*St1*Kt1*Zt2^32 + 
+T^715*St1*Kt1*Wt2^32 + T^159*St1*Kt2*Zt1^32 + T^715*St1*Kt2*Wt1^32 + 
+T^985*St1*Lt1*Wt2^32 + T^985*St1*Lt2*Wt1^32 + T^159*St2*Kt2*Zt2^32 + 
+T^715*St2*Kt2*Wt2^32 + T^985*St2*Lt2*Wt2^32 + T^691,
+Rt1*Kt2*Zt2^32 + T^929*Rt1*Kt2*Wt2^32 + T^159*Rt1*Lt2*Zt2^32 + 
+T^715*Rt1*Lt2*Wt2^32 + T^159*St1*Kt2*Zt2^32 + T^715*St1*Kt2*Wt2^32 + 
+T^985*St1*Lt2*Wt2^32 + T^640,
+Rt1*Kt3*Zt1^32 + T^929*Rt1*Kt3*Wt1^32 + T^159*Rt1*Lt3*Zt1^32 + 
+T^715*Rt1*Lt3*Wt1^32 + Rt2*Kt1*Zt1^32 + T^929*Rt2*Kt1*Wt1^32 + Rt2*Kt3*Zt2^32 + 
+T^929*Rt2*Kt3*Wt2^32 + T^159*Rt2*Lt1*Zt1^32 + T^715*Rt2*Lt1*Wt1^32 + 
+T^159*Rt2*Lt3*Zt2^32 + T^715*Rt2*Lt3*Wt2^32 + T^159*St1*Kt3*Zt1^32 + 
+T^715*St1*Kt3*Wt1^32 + T^985*St1*Lt3*Wt1^32 + T^159*St2*Kt1*Zt1^32 + 
+T^715*St2*Kt1*Wt1^32 + T^159*St2*Kt3*Zt2^32 + T^715*St2*Kt3*Wt2^32 + 
+T^985*St2*Lt1*Wt1^32 + T^985*St2*Lt3*Wt2^32 + T^770,
+Rt2*Kt3*Zt3^32 + T^929*Rt2*Kt3*Wt3^32 + T^159*Rt2*Lt3*Zt3^32 + 
+T^715*Rt2*Lt3*Wt3^32 + T^159*St2*Kt3*Zt3^32 + T^715*St2*Kt3*Wt3^32 + 
+T^985*St2*Lt3*Wt3^32 + T^139
+];
+list_w_2:=[
+Rt1*Kt2*Xt1^2 + T^621*Rt1*Kt2*Yt1^2 + T^502*Rt1*Lt2*Xt1^2 + T^612*Rt1*Lt2*Yt1^2 
++ T^502*St1*Kt2*Xt1^2 + T^612*St1*Kt2*Yt1^2 + T^621*St1*Lt2*Xt1^2 + 
+T^23*St1*Lt2*Yt1^2 + T^919,
+Rt1*Kt2*Xt2^2 + T^621*Rt1*Kt2*Yt2^2 + T^502*Rt1*Lt2*Xt2^2 + T^612*Rt1*Lt2*Yt2^2 
++ T^502*St1*Kt2*Xt2^2 + T^612*St1*Kt2*Yt2^2 + T^621*St1*Lt2*Xt2^2 + 
+T^23*St1*Lt2*Yt2^2 + T^801,
+Rt2*Kt3*Xt1^2 + T^621*Rt2*Kt3*Yt1^2 + T^502*Rt2*Lt3*Xt1^2 + T^612*Rt2*Lt3*Yt1^2 
++ T^502*St2*Kt3*Xt1^2 + T^612*St2*Kt3*Yt1^2 + T^621*St2*Lt3*Xt1^2 + 
+T^23*St2*Lt3*Yt1^2 + T^950,
+Rt2*Kt3*Xt2^2 + T^621*Rt2*Kt3*Yt2^2 + T^502*Rt2*Lt3*Xt2^2 + T^612*Rt2*Lt3*Yt2^2 
++ T^502*St2*Kt3*Xt2^2 + T^612*St2*Kt3*Yt2^2 + T^621*St2*Lt3*Xt2^2 + 
+T^23*St2*Lt3*Yt2^2 + T^700,
+Rt1*Kt3*Xt1^2 + T^621*Rt1*Kt3*Yt1^2 + T^502*Rt1*Lt3*Xt1^2 + T^612*Rt1*Lt3*Yt1^2 
++ Rt2*Kt1*Xt1^2 + T^621*Rt2*Kt1*Yt1^2 + T^502*Rt2*Lt1*Xt1^2 + 
+T^612*Rt2*Lt1*Yt1^2 + T^502*St1*Kt3*Xt1^2 + T^612*St1*Kt3*Yt1^2 + 
+T^621*St1*Lt3*Xt1^2 + T^23*St1*Lt3*Yt1^2 + T^502*St2*Kt1*Xt1^2 + 
+T^612*St2*Kt1*Yt1^2 + T^621*St2*Lt1*Xt1^2 + T^23*St2*Lt1*Yt1^2 + T^141,
+Rt1*Kt3*Xt2^2 + T^621*Rt1*Kt3*Yt2^2 + T^502*Rt1*Lt3*Xt2^2 + T^612*Rt1*Lt3*Yt2^2 
++ Rt2*Kt1*Xt2^2 + T^621*Rt2*Kt1*Yt2^2 + T^502*Rt2*Lt1*Xt2^2 + 
+T^612*Rt2*Lt1*Yt2^2 + T^502*St1*Kt3*Xt2^2 + T^612*St1*Kt3*Yt2^2 + 
+T^621*St1*Lt3*Xt2^2 + T^23*St1*Lt3*Yt2^2 + T^502*St2*Kt1*Xt2^2 + 
+T^612*St2*Kt1*Yt2^2 + T^621*St2*Lt1*Xt2^2 + T^23*St2*Lt1*Yt2^2 + T^557,
+Rt1*Kt1*Xt1^2 + T^621*Rt1*Kt1*Yt1^2 + T^502*Rt1*Lt1*Xt1^2 + T^612*Rt1*Lt1*Yt1^2 
++ Rt2*Kt2*Xt1^2 + T^621*Rt2*Kt2*Yt1^2 + T^502*Rt2*Lt2*Xt1^2 + 
+T^612*Rt2*Lt2*Yt1^2 + T^502*St1*Kt1*Xt1^2 + T^612*St1*Kt1*Yt1^2 + 
+T^621*St1*Lt1*Xt1^2 + T^23*St1*Lt1*Yt1^2 + T^502*St2*Kt2*Xt1^2 + 
+T^612*St2*Kt2*Yt1^2 + T^621*St2*Lt2*Xt1^2 + T^23*St2*Lt2*Yt1^2 + T^923,
+Rt1*Kt1*Xt2^2 + T^621*Rt1*Kt1*Yt2^2 + T^502*Rt1*Lt1*Xt2^2 + T^612*Rt1*Lt1*Yt2^2 
++ Rt2*Kt2*Xt2^2 + T^621*Rt2*Kt2*Yt2^2 + T^502*Rt2*Lt2*Xt2^2 + 
+T^612*Rt2*Lt2*Yt2^2 + T^502*St1*Kt1*Xt2^2 + T^612*St1*Kt1*Yt2^2 + 
+T^621*St1*Lt1*Xt2^2 + T^23*St1*Lt1*Yt2^2 + T^502*St2*Kt2*Xt2^2 + 
+T^612*St2*Kt2*Yt2^2 + T^621*St2*Lt2*Xt2^2 + T^23*St2*Lt2*Yt2^2 + T^782
+];
+
