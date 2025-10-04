@@ -92,6 +92,7 @@ function remove_duplicates(list)
     end for;
     return list_2;
 end function;
+
 // Compute monomial list output from a exponential map (mat_exp) and the monomial list of the previous round (vec). 
 //Use extra_components if there are affine maps
 function compute_monomial_list(mat_exp, vec, mat_extra_components)
@@ -198,6 +199,28 @@ function decompose_relation(rel)
 end function;
 
 // Compute equations and relations with weight adjustments
+function decompose_relation(rel)
+    // rel is a polynomial in S.
+    MA := AssociativeArray();
+    list_terms := Terms(rel);
+    keys_seq:=[];
+    for j in [1..#list_terms] do
+        mon_j := Monomials(list_terms[j])[1];
+        key := Evaluate(mon_j, [1 : i in [1..num_par+num_par_t+num_h+num_lin]] cat [S.i : i in [num_par+num_par_t+num_h+num_lin+1..num_vars]]);
+        coeff := Evaluate(list_terms[j], [S.i : i in [1..num_par+num_par_t+num_h+num_lin]] cat [1 : i in [num_par+num_par_t+num_h+num_lin+1..num_vars]]);
+        // Accumulate: if key already exists, add; otherwise, set it.
+        if IsDefined(MA, key) then
+            MA[key] := MA[key] + coeff;
+        else
+            MA[key] := coeff;
+        end if;
+        keys_seq cat:=[key];
+    end for;
+    //return [ <k, MA[k]> : k in Keys(MA) ];
+    return [MA[k] : k in remove_duplicates(keys_seq) ],[k: k in remove_duplicates(keys_seq)];
+end function;
+
+// Compute equations and relations with weight adjustments
 function compute_weight_equations(vec_x_random,polys_front,weights)
     vars_w:=[S.((num_vars-num_t)+i): i in weights];
     evals:=[Evaluate(x,[S.i: i in [1..num_par+num_par_t+num_h+num_lin]] cat [vars_w[i]*vec_x_random[i]: i in [1..num_x]] cat [S.i: i in [num_vars-num_t+1..num_vars]]): x in polys_front];
@@ -242,62 +265,67 @@ H2 + H3 + T^10582*/
 
 
 
-eval_list_lin:=&cat[[Sr.(i): i in [2*(k-1)*ctes_t+1..(2*k-1)*ctes_t]] 
-            cat [Sr.(i): i in [2*(k-1)*ctes_t+1..(2*k-1)*ctes_t]]: k in [1..4] ]
-            cat [1: i in [num_par_t+1..num_vars_Sr]];
-eval_r_diff:=&cat[[Sr.i: i in [2*(k-1)*ctes_t+1..(2*k-1)*ctes_t]] 
-            cat [Sr.i: i in [2*(k-1)*ctes_t+1..(2*k-1)*ctes_t]]: k in [1] ]
-            cat &cat[[1: i in [2*(k-1)*ctes_t+1..(2*k-1)*ctes_t]] 
-            cat [1: i in [2*(k-1)*ctes_t+1..(2*k-1)*ctes_t]]: k in [2..4] ]
-            cat [0: i in [num_par_t+1..num_vars_Sr]];
-eval_k_diff:=&cat[[1: i in [2*(k-1)*ctes_t+1..(2*k-1)*ctes_t]] 
-            cat [1: i in [2*(k-1)*ctes_t+1..(2*k-1)*ctes_t]]: k in [1] ]
-            cat &cat[[Sr.i: i in [2*(k-1)*ctes_t+1..(2*k-1)*ctes_t]] 
-            cat [Sr.i: i in [2*(k-1)*ctes_t+1..(2*k-1)*ctes_t]]: k in [2] ]
-            cat &cat[[1: i in [2*(k-1)*ctes_t+1..(2*k-1)*ctes_t]] 
-            cat [1: i in [2*(k-1)*ctes_t+1..(2*k-1)*ctes_t]]: k in [3..4] ]
-            cat [0: i in [num_par_t+1..num_vars_Sr]];
+eval_r_diff:=[S.(i): i in [1..ctes]]  cat [S.(i): i in [1..ctes]]
+cat [1: i in [1..ctes]]  cat [1: i in [1..ctes]]
+cat [1: i in [1..ctes]]  cat [1: i in [1..ctes]]
+cat [1: i in [1..ctes]]  cat [1: i in [1..ctes]]
+cat [S.(num_par+i): i in [1..ctes_t]]  cat [S.(num_par+i): i in [1..ctes_t]]
+cat [1: i in [1..ctes_t]]  cat [1: i in [1..ctes_t]]
+cat [1: i in [1..ctes_t]]  cat [1: i in [1..ctes_t]]
+cat [1: i in [1..ctes_t]]  cat [1: i in [1..ctes_t]]
+cat [0: i in [num_par+num_par_t+1..num_vars]];
 
-function unroll_lists(list_seq,list_diff)
-    out_h:=[];
-    cont:=0;
-    list_var_h:=[];
-    for list in list_seq do 
+
+eval_list:= [S.(i): i in [1..ctes]]  cat [S.(i): i in [1..ctes]]
+cat [S.(2*ctes+i): i in [1..ctes]]  cat [S.(2*ctes+i): i in [1..ctes]]
+cat [S.(4*ctes+i): i in [1..ctes]]  cat [S.(4*ctes+i): i in [1..ctes]]
+cat [S.(6*ctes+i): i in [1..ctes]]  cat [S.(6*ctes+i): i in [1..ctes]]
+cat [S.(num_par+i): i in [1..ctes_t]]  cat [S.(num_par+i): i in [1..ctes_t]]
+cat [S.(num_par+2*ctes_t+i): i in [1..ctes_t]]  cat [S.(num_par+2*ctes_t+i): i in [1..ctes_t]]
+cat [S.(num_par+4*ctes_t+i): i in [1..ctes_t]]  cat [S.(num_par+4*ctes_t+i): i in [1..ctes_t]]
+cat [S.(num_par+6*ctes_t+i): i in [1..ctes_t]]  cat [S.(num_par+6*ctes_t+i): i in [1..ctes_t]]
+cat [0: i in [num_par+num_par_t+1..num_vars]];
+
+
+
+function unroll_lists(list,key,list_diff,cont)
+
         list_var_x_axis:={};
         list_var_y_axis:={};
-        indpt_terms:=[Evaluate(p,[0 : i in [1..num_vars_Sr]]): p in list];
+        indpt_terms:=[Evaluate(p,[0 : i in [1..num_par+num_par_t+num_h]] cat [S.i : i in [num_par+num_par_t+num_h+1..num_vars]]): p in list];
         list_hom:=[list[i]+indpt_terms[i]: i in [1..#list]];
         list_hom;
         unrolled_list_h:=[];
+        list_H:=[];
         for j in [1..#list_hom] do
            
             mon_diff:=[Evaluate(x,list_diff): x in Monomials(list_hom[j])];
-            //mon_diff;
+            
             ass_mon_diff:=AssociativeArray(mon_diff);
-            for k in mon_diff do
-                ass_mon_diff[k]:=&+[y: y in Terms(list_hom[j])| Evaluate(Monomials(y)[1],list_diff) eq k];
+            for l in mon_diff do
+                ass_mon_diff[l]:=&+[y: y in Terms(list_hom[j])| Evaluate(Monomials(y)[1],list_diff) eq l];
             end for;
-            ass_mon_diff_list:=[ass_mon_diff[k]: k in Keys(ass_mon_diff)];
-            //ass_mon_diff_list;
-            list_var_x_axis join:={&+{Evaluate(y,eval_list_lin) div k : y in Monomials(ass_mon_diff[k])} : k in Keys(ass_mon_diff)};
+            ass_mon_diff_list:=[ass_mon_diff[l]: l in Keys(ass_mon_diff)];
+            list_var_x_axis join:={&+{Evaluate(y,eval_list) div l : y in Monomials(ass_mon_diff[l])} : l in Keys(ass_mon_diff)};
            
-            list_var_y_axis join:={k : k in Keys(ass_mon_diff)};
+            list_var_y_axis join:={l : l in Keys(ass_mon_diff)};
            
                 //for x in Keys(ass_mon_diff) do x, ass_mon_diff[x]; end for;
            count:=#Keys(ass_mon_diff);
            if count gt 1 then 
-            acum:=&+[Sr.(num_par_t+num_lin+cont+i):i in [1..(count-1)]];
-            L:=[Sr.(num_par_t+num_lin+cont+i)+ass_mon_diff_list[i] : i in [1..(count-1)]] cat [ass_mon_diff_list[count] + acum +indpt_terms[j]];
+            acum:=&+[S.(num_par+num_par_t+cont+i):i in [1..(count-1)]];
+            L:=[S.(num_par+num_par_t+cont+i)+ass_mon_diff_list[i] : i in [1..(count-1)]] cat [ass_mon_diff_list[count] + acum +indpt_terms[j]];
+            LH:=[S.(num_par+num_par_t+cont+i)*key[j] : i in [1..(count-1)]] cat [( acum +indpt_terms[j])*key[j]];
             cont+:=#L-1;
             else
             L:=[ass_mon_diff_list[1]+indpt_terms[j]];
+            LH:=[indpt_terms[j]*key[j]];
             end if;
-             unrolled_list_h cat:=[x: x in L];
+              unrolled_list_h cat:=[x: x in L];
+              list_H cat:=[x: x in LH];
         end for;
-        out_h cat:=[unrolled_list_h];
-        list_var_h cat:=[[list_var_x_axis,list_var_y_axis]];
-    end for;
-    return list_var_h,out_h;
+   
+    return cont,[list_var_x_axis,list_var_y_axis],unrolled_list_h,list_H;
 end function;
 
 
@@ -362,7 +390,7 @@ list_4 := [phi(x): x in decompose_relation(relations[4])];
 
 
 //Grouping for each polynomial in relations_weighted the terms that have the same monomial in t1,...,t6
-list_w_1 := decompose_relation(relations_weighted[1]);
+list_w_1,key1t := decompose_relation(relations_weighted[1]);
 list_w_2 := decompose_relation(relations_weighted[2]);
 list_w_3 := decompose_relation(relations_weighted[3]);
 list_w_4 := decompose_relation(relations_weighted[4]);
@@ -374,50 +402,33 @@ list_w_4 := decompose_relation(relations_weighted[4]);
 //Simplify some of the exponents of the computed equations
 load "simplify.txt";
 
-list_w_1:=[restr(x): x in list_w_1];
-list_w_2:=[restr(x): x in list_w_2];
-list_w_3:=[restr(x): x in list_w_3];
-list_w_4:=[restr(x): x in list_w_4];
-
-[inv_restr(x): x in list_w_1];
-[inv_restr(x): x in list_w_2];
-[inv_restr(x): x in list_w_3];
-[inv_restr(x): x in list_w_4];
-
 
 st1:=Sprintf("list_w_1:=%o;\nlist_w_2:=%o;\nlist_w_3:=%o;\nlist_w_4:=%o;\n",list_w_1,list_w_2,list_w_3,list_w_4);
 
 PrintFile("result.txt",st1: Overwrite:=true);
-//Remove exponents
-System("python3 remove_exp.py");
-
-load "result_without_exp.txt";
-list_var_hr,ecs_hr:=unroll_lists([list_w_1,list_w_2,list_w_3,list_w_4],eval_r_diff);
 
 
 
-var_row_axis:=[x: x  in list_var_hr[1][2] ];
 
-var_col_axis:=[x: x in list_var_hr[1][1]];
-
+cont1w,indices1w,list_w_1,list_H1w:=unroll_lists(list_w_1,key1t,eval_r_diff,0);
 
 
-eval_h_Sr:=[0: i in [1..num_par_t]] cat [Sr.i: i in [num_par_t+1..num_vars_Sr]];
+eval_h:=[0: i in [1..num_par+num_par_t]] cat [S.i: i in [num_par+num_par_t+1..num_vars]];
 
-matrices_r:=function(I,dim)
+matrices_r:=function(I,dim,var_x_axis,var_y_axis)
         entries:=ZeroMatrix(Sr,dim,dim+dim);
         
         for x in I do
-                h_x:=Evaluate(x,eval_h_Sr);
+                h_x:=Evaluate(x,eval_h);
                 x_hom:=x+h_x;
-                term_set_row:=&+{Evaluate(t,eval_r_diff): t in Monomials(x_hom)};
-                term_set_col:=&+{Evaluate(t,eval_list_lin) div Evaluate(t,eval_r_diff) : t in Monomials(x_hom)};
+                term_set_y:=&+{Evaluate(t,eval_r_diff): t in Monomials(x_hom)};
+                term_set_x:=&+{Evaluate(t,eval_list) div Evaluate(t,eval_r_diff) : t in Monomials(x_hom)};
             
-                ind_x:=Index(var_row_axis, term_set_row);
-                ind_y:=Index(var_col_axis,term_set_col); 
+                ind_x:=Index(var_x_axis, term_set_x);
+                ind_y:=Index(var_y_axis,term_set_y); 
 
                
-                entries[ind_x][ind_y]:=h_x;
+                entries[ind_y][ind_x]:=Sr!h_x;
                 
         end for;
         
@@ -426,32 +437,22 @@ matrices_r:=function(I,dim)
         return NumberOfRows(entries),NumberOfColumns(entries),entries;
 end function;
 
-rows_1,cols_1,mat_tot_r1:=matrices_r(ecs_hr[1],40);
 
+row_1,col_1,mat_tot_r1:=matrices_r(list_w_1,ctes_t,[x: x in indices1w[1]],[x: x  in indices1w[2]]);
 
 mat_s1:=Matrix(2,4,[Sr.(num_par_t+i): i in [1..8]]);
 
 mat_res1:=mat_tot_r1+u*mat_s1;
+
 mat_res1b:=Matrix(2,4,[
-    u*z[33] + T^38,
-    u*z[34] + T^160,
-    u*z[37] + T^235,
-    u*z[38] + T^193,
-    u*z[35] + T^157,
-    u*z[36] + T^90,
-    u*z[39] + T^144,
-    u*z[40] + T^82
-]
-);
-mat_res1c:=Matrix(2,4,[
-    u*z[33] + T^38,
-    u*z[35] + T^157,
-    u*z[37] + T^235,
-    u*z[39] + T^144,
-    u*z[34] + T^160,
-    u*z[36] + T^90,
-    u*z[38] + T^193,
-    u*z[40] + T^82
+    u*z[34] + T^90,
+    u*z[38] + T^82,
+    u*z[36] + T^157,
+    u*z[40] + T^144,
+    u*z[33] + T^160,
+    u*z[37] + T^193,
+    u*z[35] + T^38,
+    u*z[39] + T^235
 ]
 );
 
