@@ -1,0 +1,291 @@
+// ========== INITIAL SETUP ========== 
+// Load parameter definitions and ring setup
+load "initial_setup.txt";
+
+// ========== FUNCTION DEFINITIONS ========== 
+
+// Reduce exponents in a polynomial modulo (q-1)
+function reduce_exponents_S(poly)
+    terms := Terms(poly);
+    vars := [S.i : i in [1..num_vars]];
+    result := Zero(S);
+    for t in terms do
+        exp_vec := [Degree(t, v) mod (q - 1) : v in vars];
+        coef := Coefficients(t)[1];
+        result +:= coef * Monomial(S, exp_vec);
+    end for;
+    return result;
+end function;
+
+// Apply reduce_exponents_S to each polynomial in a vector
+function reduce_vector_S(vec)
+    return [reduce_exponents_S(p) : p in vec];
+end function;
+
+// Compute x^(2^k) mod (q-1) via exponentiation by squaring in batches
+function power_mod(x, exp)
+    if exp eq 1 then
+        return x;
+    end if;
+    modulus := q - 1;
+    k := Ilog2(exp); // Number of squarings needed
+    res := x;
+    remaining_squarings := k;
+    batch_size := 7; // Adjust based on q
+    while remaining_squarings gt 0 do
+        current_batch := Minimum(batch_size, remaining_squarings);
+        for i in [1..current_batch] do
+            res := res^2;
+        end for;
+        // Reduce exponents modulo (q-1) after the batch
+        res := reduce_exponents_S(res);
+        remaining_squarings -:= current_batch;
+    end while;
+    return res;
+end function;
+
+// Tensor-like product: row i of E with vector v using function power_mod
+function tensor_bis(E, v)
+    n := NumberOfRows(E);
+    out := [Zero(S) : i in [1..n]];
+    for i in [1..n] do
+        out[i] := &*[power_mod(v[j],E[i][j]) : j in [1..n] | E[i][j] ne 0];
+    end for;
+    return out;
+end function;
+
+
+
+function remove_duplicates(list)
+    for j in [1..#list] do
+    while exists(t){i : i in [1..#list]| list[i] ne 0 and i gt j and list[i] eq list[j]} do
+        list[t]:=0;
+    end while;
+    end for;
+    list_2:=[];
+    for i in [1..#list] do
+        if list[i] ne 0 then
+            list_2:= list_2 cat [list[i]];
+        end if;
+    end for;
+    return list_2;
+end function;
+
+// Compute monomial list output from a exponential map (mat_exp) and the monomial list of the previous round (vec). 
+//Use extra_components if there are affine maps
+function compute_monomial_list(mat_exp, vec)
+    rows := NumberOfRows(mat_exp);
+    cols := NumberOfColumns(mat_exp);
+    M1 := [[] : i in [1..rows]];
+    M := [[] : i in [1..rows]];
+    modified_vector := vec;
+    for i in [1..rows] do
+        for j in [1..cols] do
+            if mat_exp[i][j] ne 0 then
+                exps := [power_mod(modified_vector[j][k],mat_exp[i][j]) : k in [1..#modified_vector[j]]];
+                M1[i] := M1[i] cat [exps];
+            end if;
+        end for;
+        if #M1[i] gt 0 then
+            // Compute all possible products of elements in M1[i]
+            M[i] := [&*[terms[k] : k in [1..#terms]] : terms in CartesianProduct(M1[i])];
+        end if;
+    end for;
+    return [reduce_vector_S(M[j]) : j in [1..#M]];
+end function;
+
+
+// Apply compute_monomial_list across a sequence of matrices
+function compute_monomial_lists_sequence(matrices, vec)
+    num_matrices := #matrices;
+    rows:=NumberOfRows(matrices[1]);
+    M := vec;
+    for i in [1..num_matrices] do
+        M := compute_monomial_list(matrices[i], M);
+        M := [remove_duplicates(x) : x in M];
+    end for;
+    return M;
+end function;
+
+//Template lists
+
+
+list_q1:=[ S.i: i in [1..ctes]];
+list_q2:=[ S.(ctes+i): i in [1..ctes]];
+list_q3:=[S.(2*ctes+i): i in [1..num_par/8]];
+list_q4:=[S.(3*ctes+i): i in [1..num_par/8]];
+list_q5:=[S.(4*ctes+i): i in [1..num_par/8]];
+list_q6:=[S.(5*ctes+i): i in [1..num_par/8]];
+list_q7:=[S.(6*ctes+i): i in [1..num_par/8]];
+list_q8:=[S.(7*ctes+i): i in [1..num_par/8]];
+
+list_q := [list_q1, list_q2, list_q3, list_q4, list_q5, list_q6, list_q7, list_q8];
+
+function build_polynomial_list(monomial_lists)
+    poly_list := [];
+    for i in [1..#monomial_lists] do
+        base := list_q[i];
+        poly := &+[base[j] * monomial_lists[i][j] : j in [1..#monomial_lists[i]]];
+        Append(~poly_list, poly);
+    end for;
+    return poly_list;
+end function;
+
+
+// Compute the public key from linear and exponential maps
+function compute_public_key(linear_matrices, exp_matrices,initial_vector)
+    num_matrices := #linear_matrices;
+    L0_S := Matrix(S, 8, 8, [S!linear_matrices[1][i][j] : j in [1..8], i in [1..8]]);
+    L0_traspuesta := Transpose(L0_S);
+    y := initial_vector * L0_traspuesta;
+    y := ElementToSequence(y);
+    for i in [2..num_matrices] do
+        y := tensor_bis(exp_matrices[i-1], y);
+        y := ElementToSequence(reduce_vector_S(y));
+        L_next := Matrix(S, 8, 8, [S!linear_matrices[i][j][k] : k in [1..8], j in [1..8]]);
+        y := Vector(S, y) * Transpose(L_next);
+        y := reduce_vector_S(ElementToSequence(y));
+    end for;
+    return y; 
+end function;
+
+
+
+
+// Given a polynomial, generate equations by grouping terms with the same monomial in the variables x_1,...,x_8
+function decompose_relation(rel)
+    // rel is a polynomial in S.
+    MA := AssociativeArray();
+    list_terms := Terms(rel);
+    keys_seq:=[];
+    for j in [1..#list_terms] do
+        mon_j := Monomials(list_terms[j])[1];
+        key := Evaluate(mon_j, [1 : i in [1..num_par+num_par_t+num_h+num_lin]] cat [S.i : i in [num_par+num_par_t+num_h+num_lin+1..num_vars]]);
+        coeff := Evaluate(list_terms[j], [S.i : i in [1..num_par+num_par_t+num_h+num_lin]] cat [1 : i in [num_par+num_par_t+num_h+num_lin+1..num_vars]]);
+        // Accumulate: if key already exists, add; otherwise, set it.
+        if IsDefined(MA, key) then
+            MA[key] := MA[key] + coeff;
+        else
+            MA[key] := coeff;
+        end if;
+        keys_seq cat:=[key];
+    end for;
+    //return [ <k, MA[k]> : k in Keys(MA) ];
+    return [MA[k] : k in remove_duplicates(keys_seq) ],[k: k in remove_duplicates(keys_seq)];
+end function;
+
+
+
+// Compute equations and relations with weight adjustments
+function compute_weight_equations(vec_x_random,polys_front,weights)
+    vars_w:=[S.((num_vars-num_t)+i): i in weights];
+    evals:=[Evaluate(x,[S.i: i in [1..num_par+num_par_t+num_h+num_lin]] cat [vars_w[i]*vec_x_random[i]: i in [1..num_x]] cat [S.i: i in [num_vars-num_t+1..num_vars]]): x in polys_front];
+    list_poly_t:=[];
+    list_rel_t:=[];
+    for j in [1..#evals] do
+        x:=evals[j];
+        k:=num_par+(j-1)*ctes_t;
+        list_x,key:=decompose_relation(x);
+        rel_t:=[list_x[i]+S.(k+i) : i in [1..#list_x] ];
+        p:=x+(&+[rel_t[i]*key[i]: i in [1..#list_x]]);
+        list_poly_t cat:=[p];
+        list_rel_t cat:=[rel_t];
+    end for;
+    return list_rel_t,list_poly_t;
+end function;
+
+
+// Public key with weight variables
+function compute_weighted(vec_x_random,pub_key,weights)
+    pub_key:=pub_key;
+    var_w:=[S.((num_vars-num_t)+i): i in weights];
+    pub_key_w:=[Evaluate(x,[S.i: i in [1..num_par+num_par_t+num_h+num_lin]] cat [var_w[i]*vec_x_random[i]: i in [1..num_x]] cat [S.i: i in [num_vars-num_t+1..num_vars]]): x in pub_key]; 
+    pub_key_w:=reduce_vector_S(pub_key_w);
+
+    return pub_key_w;
+end function;
+
+// ========== MAIN PROGRAM ========== 
+
+
+// Initial vector [x1,x2,x3,x4,x5,x6,x7,x8]
+initial_vector := Vector(S, [S.(num_par+num_par_t+num_h+num_lin+i) : i in [1..num_x]]);
+
+// Compute public key
+public_key := compute_public_key(linears_ex, matrices_ex, initial_vector);
+
+// M0_E0:=[[x_1,x_2],[x_1,x_2],[x_3,x_4],[x_3,x_4],[x_5,x_6],[x_5,x_6],[x_7,x_8],[x_7,x_8]]
+M0_E0 := &cat[[[S.(2*i-1), S.(2*i)],[S.(2*i-1), S.(2*i)]] : i in [(num_h+num_lin+num_par+num_par_t)/2+1..(num_vars-num_t)/2]];
+
+// Generate monomial lists sequence after second exponential map, E2
+mon_E2 := compute_monomial_lists_sequence(Prune(matrices_ex), M0_E0);
+
+// Public key with weights
+weighted_public_key := compute_weighted(vec_x_random_ex, public_key, vector_weights_ex);
+
+// Build polynomial lists
+polys_E2 := build_polynomial_list(mon_E2);
+
+//Reduce variables using weights
+equations_w, polys_E2_weighted:= compute_weight_equations(vec_x_random_ex, polys_E2, vector_weights_ex);
+
+//Compute output after E2 with and without weights
+polys_E2_seq := ElementToSequence(tensor_bis(Reverse(matrices_ex)[1], polys_E2));
+polys_E2_seq_red := reduce_vector_S(polys_E2_seq);
+polys_E2_weighted_seq := ElementToSequence(tensor_bis(Reverse(matrices_ex)[1],  polys_E2_weighted));
+polys_E2_weighted_seq_red := reduce_vector_S(polys_E2_weighted_seq);
+
+
+polys_front := polys_E2_seq_red;
+polys_weighted_front := polys_E2_weighted_seq_red;
+
+
+//List of the image of public key polynomials by the inverse of the last linear map 
+
+polys_back := [&+[S.(8*(j-1)+i+(num_vars-num_lin_b-num_lin_a-num_x-num_t))*public_key[i] : i in [1..8]]: j in [1..8]];
+polys_weighted_back := [&+[S.(8*(j-1)+i+(num_vars-num_lin_b-num_lin_a-num_x-num_t))*weighted_public_key[i] : i in [1..8]]: j in [1..8]];;
+;
+
+//System of equations
+polys_relations := [polys_front[i] + polys_back[i] : i in [1..8]];
+relations := polys_relations;
+
+//System of equations with weights
+polys_weighted_relations := [polys_weighted_front[i] + polys_weighted_back[i] : i in [1..8]];
+relations_weighted := polys_weighted_relations;
+
+
+
+
+
+// Compute final equations
+list_1 := decompose_relation(relations[1]);
+list_2 := decompose_relation(relations[2]);
+list_3 := decompose_relation(relations[3]);
+list_4 := decompose_relation(relations[4]);
+
+list_5 := decompose_relation(relations[5]);
+list_6 := decompose_relation(relations[6]);
+list_7 := decompose_relation(relations[7]);
+list_8 := decompose_relation(relations[8]);
+
+
+
+st3:=Sprintf("list_1:=%o;\nlist_2:=%o;\nlist_3:=%o;\nlist_4:=%o;\nlist_5:=%o;\nlist_6:=%o;\nlist_7:=%o;\nlist_8:=%o;\n",list_1,list_2,list_3,list_4,list_5,list_6,list_7,list_8);
+
+PrintFile("original_system.txt",st3: Overwrite:=true);
+
+
+System("python3 replace.py");
+
+
+list_w_1 := decompose_relation(relations_weighted[1]);
+list_w_2 := decompose_relation(relations_weighted[2]);
+list_w_3 := decompose_relation(relations_weighted[3]);
+list_w_4 := decompose_relation(relations_weighted[4]);
+
+list_w_5 := decompose_relation(relations_weighted[5]);
+list_w_6 := decompose_relation(relations_weighted[6]);
+list_w_7 := decompose_relation(relations_weighted[7]);
+list_w_8 := decompose_relation(relations_weighted[8]);
+
