@@ -23,9 +23,10 @@
 
 ## Usage
 
-Run compute_equations.txt in Magma (version V2.21-5).
+Run compute_equations.txt in Magma (version V2.21-5). This script calls Python3.
 
 ## Notes
 
-For a precise definition of DME−, see https://blogs.mat.ucm.es/dme/
+For a precise definition of DME and DME-, see https://blogs.mat.ucm.es/dme/
+For other variants, see Chapter 3 of the thesis.
 
