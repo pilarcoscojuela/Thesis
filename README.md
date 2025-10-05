@@ -24,7 +24,7 @@ Except for the branch DME_w, main files are (not all the files are needed in all
   - Constructs systems of equations following the framework introduced by Daniel Smith-Tone et al.; only four lists appear, corresponding to the known components of the public key in the DME−     variant.  
   - Instead of computing a Gröbner basis on the original system, the script builds an alternative system by applying a weighted-variable reduction; the new system uses variables Rt, St, Kt, Lt, Zt, Wt, Xt, Yt.  
   - Writes the relations between the reduced-system variables and the original variables to linear_system.txt.  
-  - Introduce collision variables H's to the system in the variables Rt, St, Kt, Lt, Zt, Wt, Xt, Yt.
+  - Introduces collision variables H's to the system in the variables Rt, St, Kt, Lt, Zt, Wt, Xt, Yt.
   - Returns the values of the collision variables that appear in the systems for the first and second components.
 
 - remove_exp.py  
