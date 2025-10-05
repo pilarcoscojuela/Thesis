@@ -77,7 +77,7 @@ decompose_vector := function(vec)
     return out;
 end function;
 
-
+// Remove duplicates from a list
 function remove_duplicates(list)
     for j in [1..#list] do
     while exists(t){i : i in [1..#list]| list[i] ne 0 and i gt j and list[i] eq list[j]} do
@@ -94,7 +94,7 @@ function remove_duplicates(list)
 end function;
 
 // Compute monomial list output from a exponential map (mat_exp) and the monomial list of the previous round (vec). 
-//Use extra_components if there are affine maps
+// Use extra_components if there are affine maps
 function compute_monomial_list(mat_exp, vec, mat_extra_components)
     rows := NumberOfRows(mat_exp);
     cols := NumberOfColumns(mat_exp);
@@ -237,16 +237,15 @@ end function;
 
 
 // Given a polynomial unroll collisions
-/*E.g. If Rt1b*Kt1 + T^12657*Rt1b*Lt1 + T^1839*St1b*Kt1 + T^9098*St1b*Lt1 
-+ Rt3b*Kt3 + T^12657*Rt3b*Lt3 + T^1839*St3b*Kt3 + T^9098*St3b*Lt3 + T^10582 is a 
+/*E.g. If Rt1*Kt1 + T^12657*Rt1*Lt1 + T^1839*St1*Kt1 + T^9098*St1*Lt1 
++ Rt3*Kt3 + T^12657*Rt3*Lt3 + T^1839*St3*Kt3 + T^9098*St3*Lt3 + T^10582 is a 
 polynomial in a list of list_seq then 
-unrolled_list will contain 
+unrolled_list_h will contain 
  Rt1b*Kt1 + T^12657*Rt1b*Lt1 + T^1839*St1b*Kt1 + T^9098*St1b*Lt1 
-+ H2 and 
++ H1 and 
 Rt3b*Kt3 + T^12657*Rt3b*Lt3 + T^1839*St3b*Kt3 + T^9098*St3b*Lt3 
-+ H3
-while  unrolled_list_h will contain
-H2 + H3 + T^10582*/
++ H1 + T^10582
+list_diff: this tells us respect to which variables we split to build the matrix.*/
 
 
 
@@ -321,6 +320,7 @@ M0_E0 := [[S.(2*i-1), S.(2*i)] : i in [(num_h+num_lin+num_par+num_par_t)/2+1..(n
 mon_E2 := compute_monomial_lists_sequence(Prune(matrices_ex), M0_E0, translation);
 mon_E2_linear := compute_monomial_lists_sequence(Prune(matrices_ex), M0_E0, translation_0);
 mon_E2_afin:=[[x: x in mon_E2[i]|(x in mon_E2_linear[i]) eq false]: i in [1..num_x/2]];
+
 // Public key with weights
 weighted_public_key := compute_weighted(vec_x_random_ex, public_key, vector_weights_ex);
 weighted_public_key_linear:= compute_weighted(vec_x_random_ex, public_key_linear, vector_weights_ex);
@@ -342,9 +342,6 @@ polys_E2_weighted_seq_red := reduce_vector_S(polys_E2_weighted_seq);
 
 polys_front := polys_E2_seq_red;
 polys_weighted_front := polys_E2_weighted_seq_red;
-
-
-//Public key polynomials and also output after E3 because in DME minus last linear map 
 
 polys_back :=public_key;
 polys_weighted_back := weighted_public_key;
@@ -397,7 +394,7 @@ cont3w,indices3w,list_w_3,list_H3w:=unroll_lists(list_w_3,key3t,eval_x_diff,cont
 list_w_4,key4t := decompose_relation(relations_weighted[4]);
 cont4w,indices4w,list_w_4,list_H4w:=unroll_lists(list_w_4,key4t,eval_x_diff,cont3w);
 
-
+// Add the variables coming from the inverse of the last linear map
 eval_zero:=[0: i in [1..num_vars]];
 list_w_1_lin:=[x+Evaluate(x,eval_zero)+Evaluate(x,eval_zero)+S.(num_vars-num_x-num_t-7)*Evaluate(x,eval_zero)^q: x in list_w_1];
 list_w_2_lin:=[x+Evaluate(x,eval_zero)+Evaluate(x,eval_zero)+S.(num_vars-num_x-num_t-5)*Evaluate(x,eval_zero)^q: x in list_w_2];
@@ -405,7 +402,7 @@ list_w_3_lin:=[x+Evaluate(x,eval_zero)+Evaluate(x,eval_zero)+S.(num_vars-num_x-n
 list_w_4_lin:=[x+Evaluate(x,eval_zero)+Evaluate(x,eval_zero)+S.(num_vars-num_x-num_t-1)*Evaluate(x,eval_zero)^q: x in list_w_4];
 
 
-
+// Matrix construction
 eval_h:=[0: i in [1..num_par+num_par_t]] cat [S.i: i in [num_par+num_par_t+1..num_vars]];
 
 matrices_r:=function(I,dim,var_x_axis,var_y_axis)
