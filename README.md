@@ -13,7 +13,7 @@
 - compute_equations.txt  
   - Generates a public key from a fixed private key defined in initial_setup.txt.  
   - Constructs systems of equations following the framework introduced by Daniel Smith-Tone et al. and are printed in "original_system.txt".
-  - 
+    
 - replace.py  
   Python helper script that removes the exponents of equation in "original_system.txt" and prints the output in "result_replaced.txt".
   
