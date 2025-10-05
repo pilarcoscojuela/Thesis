@@ -231,18 +231,6 @@ end function;
 
 
 // Given a polynomial unroll collisions
-/*E.g. If Rt1b*Kt1 + T^12657*Rt1b*Lt1 + T^1839*St1b*Kt1 + T^9098*St1b*Lt1 
-+ Rt3b*Kt3 + T^12657*Rt3b*Lt3 + T^1839*St3b*Kt3 + T^9098*St3b*Lt3 + T^10582 is a 
-polynomial in a list of list_seq then 
-unrolled_list will contain 
- Rt1b*Kt1 + T^12657*Rt1b*Lt1 + T^1839*St1b*Kt1 + T^9098*St1b*Lt1 
-+ H2 and 
-Rt3b*Kt3 + T^12657*Rt3b*Lt3 + T^1839*St3b*Kt3 + T^9098*St3b*Lt3 
-+ H3
-while  unrolled_list_h will contain
-H2 + H3 + T^10582*/
-
-
 
 
 eval_list:=&cat[[Sr.(i): i in [2*(k-1)*ctes_t+1..(2*k-1)*ctes_t]] 
@@ -533,7 +521,7 @@ end for;
 
 simp_2:=[Evaluate(y,sol_h): y in ecs_h[1]];
 
-/*
+/* Compare how equations split depending on the choice of list_diff:
 [inv_restr(x): x in simp_2];
 [
     Rt2*Kt1*Zt3 + T^929*Rt2*Kt1*Wt3 + Rt2*Kt3*Zt4 + T^929*Rt2*Kt3*Wt4 + T^159*Rt2*Lt1*Zt3 + T^715*Rt2*Lt1*Wt3 + T^159*Rt2*Lt3*Zt4 + T^715*Rt2*Lt3*Wt4 + T^159*St2*Kt1*Zt3 + 
