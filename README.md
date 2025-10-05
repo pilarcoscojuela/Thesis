@@ -10,10 +10,7 @@ This repository contains Magma code used in the thesis “Security Analysis of t
 - DME_w: work in progress; corresponds to the DME_w section in Chapter 6.
 - recovery_variables_3ent: illustrates the “recovery of variables before the last exponential” section of Chapter 5 for a system where a matrix row has three nonzero entries.
 
-## Notes
-For a precise definition of DME, see https://blogs.mat.ucm.es/dme/
-
-
+=====================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================
 
 Except for the branch DME_w, main files are (not all the files are needed in all the branches)
 
