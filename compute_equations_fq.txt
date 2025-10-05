@@ -446,4 +446,11 @@ G1:=GroebnerBasis(restr(Minors(mat,3)));
 printf "Solution:\n%o", inv_restr(G1);
 
 
+//Compute linear system that relates Ri,Si,Ki,Li,Zi,Wi,Xi,Yi with Rti,Sti,Kti,Lti,Zti,Wti,Xti,Yti
+equations_weighted_decom:=decompose_vector(&cat[x: x in equations_w]);
+linear_system:=[Evaluate(x,[S.i: i in [1..num_vars]]): x in equations_weighted_decom];
+
+PrintFile("linear_system.txt",Sprint([linear_system]):Overwrite:=true);
+
+
 
