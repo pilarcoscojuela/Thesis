@@ -440,7 +440,7 @@ end function;
 row_1,col_1,mat_rk:=matrices_r(list_w_1,ctes_t,[x: x in indices1w[1]],[x: x in indices1w[2]]);
 
 row_2,col_2,mat_rz:=matrices_r(list_w_2,ctes_t,[x: x in indices2w[1]],[x: x in indices2w[2]]);
-mat:=HorizontalJoin(mat_rk,mat_rz);
+mat:=VerticalJoin(mat_rk,mat_rz);
 G1:=GroebnerBasis(restr(Minors(mat,3)));
 
 printf "Solution:\n%o", inv_restr(G1);
